@@ -16,11 +16,11 @@ time : main.o
 	$(CC) -$$flag main.o -o sum ;\
 	if [ $$flag = O0 ] ; \
 	then \
-		echo "Running optimization level $$flag, averaging over 3 runs" ;\
-		time for i in {0..2}; do ./sum; done \
+		echo "Running optimization level $$flag, 3 runs" ;\
+		time for i in {0..2}; do ./sum; done ;\
 	else\
-		echo "Running optimization level $$flag, averaging over 1000 runs" ;\
-		time for i in {0..999}; do ./sum; done \
+		echo "Running optimization level $$flag, 1000 runs" ;\
+		time for i in {0..999}; do ./sum; done ;\
 	fi;\
 	done
 
