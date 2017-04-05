@@ -32,17 +32,22 @@ int main(){
 	double c_re_array[arrlength];
 	double c_im_array[arrlength];
 	srand(time(NULL));
-	int i;	
+	int i;
 	for (i = 0; i<arrlength ; i++){
 		b_re_array[i] = rand();
 		b_im_array[i] = rand();
 		c_re_array[i] = rand();
 		c_im_array[i] = rand();
 	}
+	/* 
+	for (i =0; i<arrlength; i++){
+		mul_cpx(&b_re_array[i],&b_im_array[i],&c_re_array[i],&c_im_array[i],&a_re_array[i],&a_im_array[i]);
+	}
+	*/
 	/*
 	for (i =0; i<arrlength; i++){
 		mul_cpx2(&b_re_array[i],&b_im_array[i],&c_re_array[i],&c_im_array[i],&a_re_array[i],&a_im_array[i]);
-	}	
+	}
 	*/
 	for (i =0; i<arrlength; i++){
 		double complex a;

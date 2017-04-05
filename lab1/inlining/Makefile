@@ -16,7 +16,7 @@ main.o : main.c
 mul_cpx2.o : mul_cpx2.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-clean : 
+clean :
 	rm -f $(OBJS) inlining
 
 cleanall : clean
@@ -24,4 +24,4 @@ cleanall : clean
 
 benchmark : all
 	@echo "Running ./inlining 3000 times: "
-	@time for i in {0..2999}; do ./inlining; done
+	@bash -c "time for i in {0..2999}; do ./inlining; done"
