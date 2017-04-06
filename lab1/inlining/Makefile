@@ -5,7 +5,6 @@
 
 OBJS = main.o mul_cpx2.o
 CC = gcc
-CFLAGS = -O1
 
 all : $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -o inlining
@@ -25,3 +24,6 @@ cleanall : clean
 benchmark : all
 	@echo "Running ./inlining 3000 times: "
 	@bash -c "time for i in {0..2999}; do ./inlining; done"
+
+
+

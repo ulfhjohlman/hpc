@@ -1,0 +1,98 @@
+        -:    0:Source:main.c
+        -:    0:Graph:main.gcno
+        -:    0:Data:main.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include<stdio.h>
+        -:    2:#include<time.h>
+        -:    3:#include<stdlib.h>
+        -:    4:
+     1000:    5:void row_sums(double * sums,const double ** matrix,size_t nrs,size_t ncs){
+        -:    6:  size_t ix;
+  1001000:    7:  for ( ix=0; ix < nrs; ++ix ) {
+  1000000:    8:    double sum = 0;
+        -:    9:    size_t jx;
+1001000000:   10:    for (jx=0; jx < ncs; ++jx )
+1000000000:   11:      sum += matrix[ix][jx];
+  1000000:   12:    sums[ix] = sum;
+        -:   13:  }
+     1000:   14:}
+        -:   15:
+     1000:   16:void col_sums(double * sums,const double ** matrix,size_t nrs,size_t ncs){
+        -:   17:  size_t jx;
+  1001000:   18:  for ( jx=0; jx < ncs; ++jx ) {
+  1000000:   19:    double sum = 0;
+        -:   20:    size_t ix;
+1001000000:   21:    for ( ix=0; ix < nrs; ++ix )
+1000000000:   22:      sum += matrix[ix][jx];
+  1000000:   23:    sums[jx] = sum;
+        -:   24:  }
+     1000:   25:}
+        -:   26:
+        -:   27:/* a faster version of colsum due to locality. */
+     1000:   28:void col_sums2(double * sums,const double ** matrix,size_t nrs,size_t ncs){
+        -:   29:  size_t jx;
+  1001000:   30:  for ( jx=0; jx < ncs; ++jx )
+  1000000:   31:    sums[jx]=0;
+        -:   32:  size_t ix;
+  1001000:   33:  for ( ix=0; ix < ncs; ++ix ) {
+1001000000:   34:    for ( jx=0; jx < nrs; ++jx )
+1000000000:   35:      sums[jx] += matrix[ix][jx];
+        -:   36:  }
+     1000:   37:}
+        -:   38:
+        -:   39:/* prints a matrix for debugging purposes*/
+    #####:   40:void printMatrix(double **a,int size){
+        -:   41:  int i,j;
+    #####:   42:  for(i=0;i<size;i++){
+    #####:   43:    for(j=0;j<size;j++){
+    #####:   44:      printf(" %f ",a[i][j]);
+        -:   45:    }
+    #####:   46:    printf("\n");
+        -:   47:  }
+    #####:   48:}
+        1:   49:int main(){
+        -:   50:  int z;
+     1001:   51:  for(z=0;z<1000;z++){
+     1000:   52:  int size = 1000;
+        -:   53:  double **a;
+     1000:   54:  double asdf = 2;
+     1000:   55:  srand(time(NULL));
+     1000:   56:  a = malloc(size * sizeof(*a));
+        -:   57:  int i,j;
+  1001000:   58:  for(i=0;i<size;i++){
+  1000000:   59:    a[i] = malloc(size * sizeof(**a));
+        -:   60:  }
+        -:   61:  /*printMatrix(a,size);*/
+  1001000:   62:  for (i=0; i<size; i++){
+1001000000:   63:    for (j=0; j<size; j++){
+1000000000:   64:      a[i][j] = rand();
+        -:   65:    }
+        -:   66:  }
+        -:   67:  /*printMatrix(a,size);*/
+     1000:   68:  double rowSum[size];
+     1000:   69:  double colSum[size];
+     1000:   70:  double colSum2[size];
+     1000:   71:  row_sums(rowSum,(const double **)a,size,size);
+     1000:   72:  col_sums(colSum,(const double **)a,size,size);
+     1000:   73:  col_sums2(colSum2,(const double **)a,size,size);
+        -:   74:
+        -:   75:  /* prints results for debugging*/
+        -:   76:  /*
+        -:   77:  printf("Row sums:\n");
+        -:   78:  for(j=0;j<size;j++){
+        -:   79:    printf(" %f \n",rowSum[j]);
+        -:   80:  }
+        -:   81:  
+        -:   82:  printf("Col sums:\n");
+        -:   83:  for(j=0;j<10;j++){
+        -:   84:    printf(" %f ",colSum[j]);
+        -:   85:  }
+        -:   86:  
+        -:   87:  printf("Col2 sums:\n");
+        -:   88:  for(j=0;j<size;j++){
+        -:   89:    printf(" %f ",colSum2[j]);
+        -:   90:  }
+        -:   91:  */
+        -:   92:}
+        1:   93:}

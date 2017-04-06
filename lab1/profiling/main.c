@@ -47,6 +47,8 @@ void printMatrix(double **a,int size){
   }
 }
 int main(){
+  int z;
+  for(z=0;z<1000;z++){
   int size = 1000;
   double **a;
   double asdf = 2;
@@ -66,9 +68,9 @@ int main(){
   double rowSum[size];
   double colSum[size];
   double colSum2[size];
-  /*row_sums(rowSum,(const double **)a,size,size);*/
+  row_sums(rowSum,(const double **)a,size,size);
   col_sums(colSum,(const double **)a,size,size);
-  /*col_sums2(colSum2,(const double **)a,size,size);*/
+  col_sums2(colSum2,(const double **)a,size,size);
 
   /* prints results for debugging*/
   /*
@@ -87,4 +89,5 @@ int main(){
     printf(" %f ",colSum2[j]);
   }
   */
+}
 }
