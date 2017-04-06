@@ -18,6 +18,13 @@ Looping over the deeper nested index of the matrix first seems to slow down the 
 
 ### Indirect Addressing
 
+| 5000 Runs each                                           | -O0   |  -O3  |
+|----------------------------------------------------------|-------|-------|
+| Initialization + indirect_addressing + direct_addressing | 16.9s | 16.3s |
+| Initialization + indirect_addressing                     | 16.1s | 15.8s |
+| Initialization + direct_addressing                       | 15.8s | 15.6s |
+
+
 ### Valgrind
 
 ### Profiling
