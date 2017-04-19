@@ -26,13 +26,10 @@ int main(int argc, char *argv[]){
     exponent = (int) strtol(argv[optind],(char**)NULL,10);
 
   /* stores number of iterations required before aborting computations */
-  int ** matrixIterations = malloc(size*sizeof(int*));
+  int * matrixIterations = malloc(size*size*sizeof(int));
   /* stores the enumeration of the root the element converges towards */
-  int ** matrixAttractor = malloc(size*sizeof(int*));;
-  for(int i =0 ; i< size; i++){
-    matrixIterations[i] = malloc(size*sizeof(int));
-    matrixAttractor[i] = malloc(size*sizeof(int));
-  }
+  int * matrixAttractor = malloc(size*size*sizeof(int));;
+
   /* gets roots of the equation f(x)=x^d-1 depending on chosen exponent d */
   double complex * roots = getRoots(exponent);
 
@@ -61,21 +58,21 @@ int main(int argc, char *argv[]){
     pthread_join(threads[i], NULL);
   }
 
-  /*
+/*
     for(int i =0 ; i< size; i++){
       for(int j =0 ; j< size; j++){
-        printf("%d ",matrixAttractor[i][j]);
+        printf("%d ",matrixAttractor[i+size*j]);
       }
       printf("\n");
     }
     printf("\n");
     for(int i =0 ; i< size; i++){
       for(int j =0 ; j< size; j++){
-        printf("%d ",matrixIterations[i][j]);
+        printf("%d ",matrixIterations[i+size*j]);
       }
       printf("\n");
-    }*/
-
+    }
+*/
   printf("PRINTING\n");
   makePPM(size,matrixAttractor,RGB,exponent);
   makePPM(size,matrixIterations,BW,exponent);

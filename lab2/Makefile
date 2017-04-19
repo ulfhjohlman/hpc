@@ -4,7 +4,7 @@
 .PHONY : cleanall
 
 OBJS = main.o makePPM.o doIteration.o
-CFLAGS =
+CFLAGS = -O3
 LIBS = -lpthread -std=c99
 
 all : $(OBJS)
@@ -20,6 +20,10 @@ doIteration.o :  doIteration.c  doIteration.h
 	$(CC) $(CFLAGS) -c  doIteration.c
 
 allandrun : all
+	./newton -t1 -l1000 5
+
+
+allandtime : all
 	time ./newton -t1 -l1000 5
 
 clean :

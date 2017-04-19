@@ -5,8 +5,8 @@ enum ppmMode {RGB,BW};
 
 char* getPPMColor(int x);
 
-char* getPPMBW(int x);
+char* getPPMBW(int x, char* str);
 
-void makePPM(int matrixSize, int ** matrix,enum ppmMode mode,int d);
+void makePPM(int matrixSize, int * matrix,enum ppmMode mode,int d);
 
 #endif

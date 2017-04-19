@@ -32,14 +32,14 @@ void  * runPixelCalc(void *args){
       /* check exit conditions */
       for(int i=0;i<input->exponent;i++){
         if(cabs(input->roots[i]-z) < 0.001){
-          input->attractor[x][y] = i;
-          input->nIterations[x][y] = iter;
+          input->attractor[currentPixel] = i;
+          input->nIterations[currentPixel] = iter;
           goto NEXT_PIXEL;
         }
       }
       if(cabs(z)<0.001 || creal(z) > 10E10 || cimag(z) > 10E10){
-        input->attractor[x][y] = input->exponent; /* 'exponent' is used as the enumeration for the bonus root for divergent x */
-        input->nIterations[x][y] = iter;
+        input->attractor[currentPixel] = input->exponent; /* 'exponent' is used as the enumeration for the bonus root for divergent x */
+        input->nIterations[currentPixel] = iter;
         goto NEXT_PIXEL;
       }
       /* 1 newton iteration */
@@ -47,6 +47,6 @@ void  * runPixelCalc(void *args){
       iter++;
     }
     NEXT_PIXEL: currentPixel++;
-  } while(currentPixel < input->stop);
+  } while(currentPixel <= input->stop);
   return 0;
 }

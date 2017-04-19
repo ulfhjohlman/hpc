@@ -8,8 +8,8 @@ double complex * getRoots(int root);
 void * runPixelCalc(void * args);
 
 typedef struct{
-  int ** nIterations;
-  int ** attractor;
+  int * nIterations;
+  int * attractor;
   double complex * roots;
   int exponent;
   int size;
