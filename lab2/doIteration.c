@@ -18,28 +18,35 @@ double complex * getRoots(int exp){
 
 /* takes one pixel and performs the described newton iteration procedure.
    Saves number of iterations and the attracting root to the input pointers */
-void calcPixel(int* nIterations, int* attractor, double complex * roots, int exponent,int size, int i, int j){
-  double x_re = -2 + (double)j * 4/(double)size;
-  double x_im = 2 - (double)i * 4/(double)size;
-  double complex x = x_re + x_im *I;
-  int iter=0;
-
-  while(1){
-    /* check exit conditions */
-    for(i=0;i<exponent;i++){
-      if(cabs(roots[i]-x) < 0.001){
-        *attractor = i;
-        *nIterations = iter;
-        return;
+void  * runPixelCalc(void *args){
+  input_struct * input = args;
+  int currentPixel = input->start;
+  do{
+    int x = currentPixel % input->size;
+    int y = (currentPixel - x)/input->size;
+    double z_re = -2 + (double)y * 4/(double)input->size;
+    double z_im = 2 - (double)x * 4/(double)input->size;
+    double complex z = z_re + z_im *I;
+    int iter=0;
+    while(1){
+      /* check exit conditions */
+      for(int i=0;i<input->exponent;i++){
+        if(cabs(input->roots[i]-z) < 0.001){
+          input->attractor[x][y] = i;
+          input->nIterations[x][y] = iter;
+          goto NEXT_PIXEL;
+        }
       }
+      if(cabs(z)<0.001 || creal(z) > 10E10 || cimag(z) > 10E10){
+        input->attractor[x][y] = input->exponent; /* 'exponent' is used as the enumeration for the bonus root for divergent x */
+        input->nIterations[x][y] = iter;
+        goto NEXT_PIXEL;
+      }
+      /* 1 newton iteration */
+      z = z - (cpow(z,input->exponent)-1)/(input->exponent*cpow(z,input->exponent-1));
+      iter++;
     }
-    if(cabs(x)<0.001 || creal(x) > 10E10 || cimag(x) > 10E10){
-      *attractor = exponent; /* 'exponent' is used as the enumeration for the bonus root for divergent x */
-      *nIterations = iter;
-      return;
-    }
-    /* 1 newton iteration */
-    x = x - (cpow(x,exponent)-1)/(exponent*cpow(x,exponent-1));
-    iter++;
-  }
+    NEXT_PIXEL: currentPixel++;
+  } while(currentPixel < input->stop);
+  return 0;
 }
