@@ -5,19 +5,19 @@
 
 OBJS = main.o makePPM.o doIteration.o
 CFLAGS = -O3
-LIBS = -lpthread -std=c99
+LIBS = -pthread -lpthread -std=c99 -lm -lunistd
 
 all : $(OBJS)
 	$(CC) $(CFLAGS) -o newton $(OBJS) $(LIBS)
 
 main.o : main.c makePPM.h doIteration.h
-	$(CC) $(CFLAGS) -c main.c
+	$(CC) $(CFLAGS) -c main.c $(LIBS)
 
 makePPM.o : makePPM.c makePPM.h
-	$(CC) $(CFLAGS) -c makePPM.c
+	$(CC) $(CFLAGS) -c makePPM.c $(LIBS)
 
 doIteration.o :  doIteration.c  doIteration.h
-	$(CC) $(CFLAGS) -c  doIteration.c
+	$(CC) $(CFLAGS) -c doIteration.c $(LIBS)
 
 allandrun : all
 	./newton -t1 -l1000 5
