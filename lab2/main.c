@@ -32,7 +32,7 @@ int main(int argc, char *argv[]){
   int * matrixAttractor = malloc(size*size*sizeof(int));;
 
   /* gets roots of the equation f(x)=x^d-1 depending on chosen exponent d */
-  double complex * roots = getRoots(exponent);
+  double * roots = getRoots(exponent);
 
 
   pthread_t threads[nThreads];
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]){
     }
 */
   printf("PRINTING\n");
-//  makePPM(size,matrixAttractor,RGB,exponent);
-//  makePPM(size,matrixIterations,BW,exponent);
+  makePPM(size,matrixAttractor,RGB,exponent);
+  makePPM(size,matrixIterations,BW,exponent);
   printf("DONE\n");
 }

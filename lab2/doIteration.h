@@ -4,14 +4,14 @@
 #include<pthread.h>
 #include <math.h>
 
-double complex * getRoots(int root);
+double * getRoots(int root);
 
 void * runPixelCalc(void * args);
 
 typedef struct{
   int * nIterations;
   int * attractor;
-  double complex * roots;
+  double * roots;
   int exponent;
   int size;
   int start;
