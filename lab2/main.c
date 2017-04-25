@@ -75,7 +75,7 @@ int main(int argc, char *argv[]){
     }
 */
   printf("PRINTING\n");
-  makePPM(size,matrixAttractor,RGB,exponent);
-  makePPM(size,matrixIterations,BW,exponent);
+//  makePPM(size,matrixAttractor,RGB,exponent);
+//  makePPM(size,matrixIterations,BW,exponent);
   printf("DONE\n");
 }

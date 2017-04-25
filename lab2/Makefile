@@ -5,7 +5,7 @@
 
 OBJS = main.o makePPM.o doIteration.o
 CFLAGS = -O3
-LIBS = -pthread -lpthread -std=c99 -lm -lunistd
+LIBS = -pthread -lpthread -lm
 
 all : $(OBJS)
 	$(CC) $(CFLAGS) -o newton $(OBJS) $(LIBS)

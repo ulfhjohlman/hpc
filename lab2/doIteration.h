@@ -2,6 +2,7 @@
 #define DOITERATION_HEADER
 #include<complex.h>
 #include<pthread.h>
+#include <math.h>
 
 double complex * getRoots(int root);
 

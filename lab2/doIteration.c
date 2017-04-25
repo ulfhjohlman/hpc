@@ -1,6 +1,5 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<math.h>
 #include "doIteration.h"
 
 /* returns the roots to the equation f(x)=(x^exp)-1 */
