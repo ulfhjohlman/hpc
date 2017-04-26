@@ -16,7 +16,8 @@ typedef struct{
   double * roots;
   int exponent;
   int size;
-  int start;
+  int id;
+  int nThreads;
   int stop;
 }input_struct;
 

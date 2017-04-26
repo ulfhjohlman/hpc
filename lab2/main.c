@@ -45,8 +45,9 @@ int main(int argc, char *argv[]){
     in_data[i].roots = roots;
     in_data[i].exponent = exponent;
     in_data[i].size = size;
-    in_data[i].start = i*size*size/nThreads;
-    in_data[i].stop = (i+1)*size*size/nThreads-1;
+    in_data[i].id = i;
+    in_data[i].nThreads = nThreads;
+    in_data[i].stop = size*size;
     pthread_create(&threads[i], NULL ,runPixelCalc, &in_data[i]);
   }
 
