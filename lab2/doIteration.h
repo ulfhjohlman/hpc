@@ -3,6 +3,7 @@
 #include<complex.h>
 #include<pthread.h>
 #include <math.h>
+#include<pthread.h>
 
 double * getRoots(int root);
 
@@ -16,9 +17,8 @@ typedef struct{
   double * roots;
   int exponent;
   int size;
-  int id;
-  int nThreads;
-  int stop;
+  pthread_mutex_t mutex;
+  int nextRowToDo;
 }input_struct;
 
 #endif

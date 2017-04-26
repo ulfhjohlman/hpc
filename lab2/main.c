@@ -3,6 +3,7 @@
 #include<unistd.h>
 #include<pthread.h>
 #include<getopt.h>
+#include<semaphore.h>
 
 #include "makePPM.h"
 #include "doIteration.h"
@@ -36,46 +37,29 @@ int main(int argc, char *argv[]){
 
   pthread_t threads[nThreads];
   int i,start,stop;
-  input_struct in_data[nThreads];
+  input_struct in_data;
 
+  pthread_mutex_t mutex;
+  pthread_mutex_init(&mutex,NULL);
 
+  in_data.nIterations = matrixIterations;
+  in_data.attractor = matrixAttractor;
+  in_data.roots = roots;
+  in_data.exponent = exponent;
+  in_data.size = size;
+  in_data.mutex = mutex;
+  in_data.nextRowToDo = 0;
   for(i=0;i<nThreads;i++){
-    in_data[i].nIterations = matrixIterations;
-    in_data[i].attractor = matrixAttractor;
-    in_data[i].roots = roots;
-    in_data[i].exponent = exponent;
-    in_data[i].size = size;
-    in_data[i].id = i;
-    in_data[i].nThreads = nThreads;
-    in_data[i].stop = size*size;
-    pthread_create(&threads[i], NULL ,runPixelCalc, &in_data[i]);
+    pthread_create(&threads[i], NULL ,runPixelCalc, &in_data);
   }
-
-
-
-
   printf("waiting for threads\n");
   for(i=0;i<nThreads;i++){
     pthread_join(threads[i], NULL);
   }
+  pthread_mutex_destroy(&mutex);
 
-/*
-    for(int i =0 ; i< size; i++){
-      for(int j =0 ; j< size; j++){
-        printf("%d ",matrixAttractor[i+size*j]);
-      }
-      printf("\n");
-    }
-    printf("\n");
-    for(int i =0 ; i< size; i++){
-      for(int j =0 ; j< size; j++){
-        printf("%d ",matrixIterations[i+size*j]);
-      }
-      printf("\n");
-    }
-*/
   printf("PRINTING\n");
-  //makePPM(size,matrixAttractor,RGB,exponent);
-  //makePPM(size,matrixIterations,BW,exponent);
+  makePPM(size,matrixAttractor,RGB,exponent);
+  makePPM(size,matrixIterations,BW,exponent);
   printf("DONE\n");
 }

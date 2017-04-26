@@ -18,8 +18,17 @@ double * getRoots(int exp){
 void  * runPixelCalc(void *args){
   input_struct * input = args;
   int d = input->exponent;
-  int currentPixel = input->id*input->size;
-  do{
+  int currentPixel=0;
+  while(1){
+    if(currentPixel % input->size == 0){ //start a new row
+      pthread_mutex_lock(&input->mutex);
+      currentPixel = input->nextRowToDo * input->size;
+      input->nextRowToDo++;
+      pthread_mutex_unlock(&input->mutex);
+      if(currentPixel >= input->size*input->size){
+        return 0;
+      }
+    }
     double x = currentPixel % input->size;
     double y = (currentPixel - x)/input->size;
     double z_re = -2 + y* 4/(double)input->size;
@@ -44,11 +53,7 @@ void  * runPixelCalc(void *args){
       iter++;
     }
     NEXT_PIXEL: currentPixel++;
-    if(currentPixel % input->size == 0){ //start a new row
-      currentPixel += (input->nThreads-1) * input->size;
-    }
-  } while(currentPixel <= input->stop);
-  return 0;
+  }
 }
 
 /* 1 newton iteration of the given function*/
