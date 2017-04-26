@@ -34,7 +34,6 @@ int main(int argc, char *argv[]){
   /* gets roots of the equation f(x)=x^d-1 depending on chosen exponent d */
   double * roots = getRoots(exponent);
 
-
   pthread_t threads[nThreads];
   int i,start,stop;
   input_struct in_data[nThreads];
@@ -75,7 +74,7 @@ int main(int argc, char *argv[]){
     }
 */
   printf("PRINTING\n");
-  makePPM(size,matrixAttractor,RGB,exponent);
-  makePPM(size,matrixIterations,BW,exponent);
+  //makePPM(size,matrixAttractor,RGB,exponent);
+  //makePPM(size,matrixIterations,BW,exponent);
   printf("DONE\n");
 }

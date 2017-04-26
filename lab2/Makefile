@@ -24,7 +24,7 @@ allandrun : all
 
 
 allandtime : all
-	time ./newton -t1 -l1000 5
+	time ./newton -t1 -l100 3
 
 clean :
 	rm -f $(OBJS) newton* *.h.gch
