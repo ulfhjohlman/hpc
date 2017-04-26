@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<unistd.h>
 #include "makePPM.h"
 
 /* Gets a color to represent an integer between 0-6 */
@@ -18,62 +19,61 @@ char* getPPMColor(int x){
     return " 2 0 2 ";
   if(x == 6)
     return " 1 1 1 ";
-  exit(3);
+  if(x == 7)
+    return " 1 0 1 ";
+  printf("ERR: no color\n");
+  exit(1);
 }
 
-/* gets a shade of grey to represent an integer in range 0-10 */
-char* getPPMBW(int x, char* str){
-  sprintf(str," %d %d %d ",x,x,x);
-  return str;
-}
 
 /* Prints to file an int matrix as a PPM visualisation.
 Either in attractor/color mode where the input matrix element is a number enumerationg the root of the pixel
 or convergens/black&white mode where the input matrix element is iteration number 0-10*/
-void makePPM(int matrixSize, int* matrix, enum ppmMode mode,int d){
-  char *fileName = (char*)malloc(30 * sizeof(char));
-  int maxColorValue;
-  if(mode == RGB){
-    sprintf(fileName,"newton_attractors_x%d.ppm",d);
-    maxColorValue = 2;
-  }
-  else if(mode == BW){
-    sprintf(fileName,"newton_convergence_x%d.ppm",d);
-    maxColorValue = 9;
-  }
-  else
+void * runMakePPM(void * args){
+  input_struct * input = args;
+  char *fileRGB = (char*)malloc(30 * sizeof(char));
+  char *fileBW = (char*)malloc(30 * sizeof(char));
+  int maxColorValueRGB = 2;
+  int maxColorValueBW = 9;
+  sprintf(fileRGB,"newton_attractors_x%d.ppm",input->exponent);
+  sprintf(fileBW,"newton_convergence_x%d.ppm",input->exponent);
+  FILE *frgb = fopen(fileRGB,"w");
+  FILE *fbw = fopen(fileBW,"w");
+  if (fbw == NULL || frgb == NULL)
   {
-    printf("Invalid write mode. Nothing printed.\n");
-    exit(2);
-  }
-  FILE *f = fopen(fileName,"w");
-  if (f == NULL)
-  {
-    printf("Error opening file!\n");
+    printf("Error opening files!\n");
     exit(1);
   }
-  fprintf(f,"P3\n%d %d\n%d\n", matrixSize, matrixSize, maxColorValue);
+  fprintf(frgb,"P3\n%d %d\n%d\n", input->size, input->size, maxColorValueRGB);
+  fprintf(fbw,"P3\n%d %d\n%d\n", input->size, input->size, maxColorValueBW);
+  int i,j,x;
+  j=0;
+  while(1){
+    pthread_mutex_lock(&input->mutex);
+    //10 buffer rows to prevent writing uncalculated rows
+    if(j > input->nextRowToDo-(10+input->nThreads) && input->nextRowToDo < input->size){
+      pthread_mutex_unlock(&input->mutex);
+      usleep(100000);
+      printf("locking: j = %d\n",j);
+      continue;
+    }
+    pthread_mutex_unlock(&input->mutex);
 
-  int i,j;
-  if(mode == RGB){
-    for(i=0;i<matrixSize;i++){
-      for(j=0;j<matrixSize;j++){
-        fprintf(f,"%s", getPPMColor(matrix[i+matrixSize*j]));
-      }
-      fprintf(f,"\n");
+    for(i=0;i<input->size;i++){
+      fprintf(frgb,"%s", getPPMColor(input->attractor[i+input->size*j]));
+      x = input->nIterations[i+input->size*j];
+      fprintf(fbw," %d %d %d ", x,x,x);
+    }
+    fprintf(frgb,"\n");
+    fprintf(fbw,"\n");
+    j++;
+    if(j== input->size){
+      break;
     }
   }
-  else if(mode == BW){
-    char * str = (char*)malloc(17 * sizeof(char));
-    for(i=0;i<matrixSize;i++){
-      for(j=0;j<matrixSize;j++){
-        fprintf(f,"%s", getPPMBW(matrix[i+matrixSize*j],str));
-      }
-      fprintf(f,"\n");
-    }
-    free(str);
-  }
-  fclose(f);
-  free(fileName);
-  return;
+  fclose(frgb);
+  fclose(fbw);
+  free(fileRGB);
+  free(fileBW);
+  return 0;
 }

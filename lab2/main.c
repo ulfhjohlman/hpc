@@ -49,17 +49,19 @@ int main(int argc, char *argv[]){
   in_data.size = size;
   in_data.mutex = mutex;
   in_data.nextRowToDo = 0;
+  in_data.nThreads = nThreads;
   for(i=0;i<nThreads;i++){
     pthread_create(&threads[i], NULL ,runPixelCalc, &in_data);
   }
-  printf("waiting for threads\n");
+  pthread_t writeThread;
+  pthread_create(&writeThread, NULL, runMakePPM,&in_data);
+
+  printf("waiting for calculation threads\n");
   for(i=0;i<nThreads;i++){
     pthread_join(threads[i], NULL);
   }
+  printf("waiting for file writer thread\n");
   pthread_mutex_destroy(&mutex);
-
-  printf("PRINTING\n");
-  makePPM(size,matrixAttractor,RGB,exponent);
-  makePPM(size,matrixIterations,BW,exponent);
+  pthread_join(writeThread,NULL);
   printf("DONE\n");
 }

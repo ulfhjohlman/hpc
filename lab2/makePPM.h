@@ -1,12 +1,12 @@
 #ifndef MAKEPPM_HEADER
 #define MAKEPPM_HEADER
-
+#include "doIteration.h"
 enum ppmMode {RGB,BW};
 
 char* getPPMColor(int x);
 
 char* getPPMBW(int x, char* str);
 
-void makePPM(int matrixSize, int * matrix,enum ppmMode mode,int d);
+void * runMakePPM(void * args);
 
 #endif

@@ -19,6 +19,7 @@ typedef struct{
   int size;
   pthread_mutex_t mutex;
   int nextRowToDo;
+  int nThreads;
 }input_struct;
 
 #endif
