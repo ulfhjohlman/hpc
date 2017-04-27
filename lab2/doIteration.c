@@ -2,7 +2,7 @@
 #include<stdlib.h>
 #include "doIteration.h"
 
-/* returns the roots to the equation f(x)=(x^exp)-1 */
+/* returns the roots to the equation f(x)=(x^exp)-1 in form [root1_re, root1_im, root2_re,...]*/
 double * getRoots(int exp){
   double * ret;
   ret = malloc(sizeof(double)*exp*2);
@@ -18,6 +18,7 @@ double * getRoots(int exp){
 void  * runPixelCalc(void *args){
   input_struct * input = args;
   int d = input->exponent;
+  double a,b,c,k,e,f,g,h;
   int currentPixel=0;
   while(1){
     if(currentPixel % input->size == 0){ //start a new row
@@ -49,7 +50,8 @@ void  * runPixelCalc(void *args){
         input->nIterations[currentPixel] = iter;
         goto NEXT_PIXEL;
       }
-      newtonIteration(&z_re,&z_im,d);
+
+      newtonIteration(&z_re,&z_im,d,&a,&b,&c,&k,&e,&f,&g,&h);
       iter++;
     }
     NEXT_PIXEL: currentPixel++;
@@ -57,27 +59,29 @@ void  * runPixelCalc(void *args){
 }
 
 /* 1 newton iteration of the given function*/
-void newtonIteration(double * z_re, double * z_im,int d){
+void newtonIteration(double * z_re, double * z_im,int d, double * numerator_abs,
+   double * numerator_arg, double * denominator_abs, double * denominator_arg,
+   double * numerator_re, double * numerator_im, double * z_abs, double * z_arg){
   //z = z - (cpow(z,d)-1)/(d*cpow(z,d-1));
-  double z_abs = hypot(*z_re,*z_im);
-  double z_arg = atan2(*z_im,*z_re);
+  *z_abs = hypot(*z_re,*z_im);
+  *z_arg = atan2(*z_im,*z_re);
 
-  double numerator_abs = pow(z_abs,d);
-  double numerator_arg = z_arg * d;
+   *numerator_abs = pow(*z_abs,d);
+   *numerator_arg = *z_arg * d;
 
-  double numerator_re = numerator_abs*cos(numerator_arg)-1;
-  double numerator_im = numerator_abs*sin(numerator_arg);
+   *numerator_re = *numerator_abs*cos(*numerator_arg)-1;
+   *numerator_im = *numerator_abs*sin(*numerator_arg);
 
-  numerator_abs = hypot(numerator_re,numerator_im);
-  numerator_arg = atan2(numerator_im,numerator_re);
+  *numerator_abs = hypot(*numerator_re,*numerator_im);
+  *numerator_arg = atan2(*numerator_im,*numerator_re);
 
-  double denominator_abs = d*pow(z_abs,d-1);
-  double denominator_arg = z_arg * (d-1);
+   *denominator_abs = d*pow(*z_abs,d-1);
+   *denominator_arg = *z_arg * (d-1);
 
-  numerator_abs = numerator_abs/denominator_abs;
-  numerator_arg = numerator_arg - denominator_arg;
+  *numerator_abs = *numerator_abs/ *denominator_abs;
+  *numerator_arg = *numerator_arg - *denominator_arg;
 
-  *z_re = *z_re - numerator_abs*cos(numerator_arg);
-  *z_im = *z_im - numerator_abs*sin(numerator_arg);
+  *z_re = *z_re - *numerator_abs*cos(*numerator_arg);
+  *z_im = *z_im - *numerator_abs*sin(*numerator_arg);
   return;
 }

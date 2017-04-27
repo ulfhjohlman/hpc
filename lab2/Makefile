@@ -4,7 +4,7 @@
 .PHONY : cleanall
 
 OBJS = main.o makePPM.o doIteration.o
-CFLAGS = -O3
+CFLAGS = -O3 -pg
 LIBS = -pthread -lpthread -lm
 
 all : $(OBJS)

@@ -54,7 +54,6 @@ void * runMakePPM(void * args){
     if(j > input->nextRowToDo-(10+input->nThreads) && input->nextRowToDo < input->size){
       pthread_mutex_unlock(&input->mutex);
       usleep(100000);
-      printf("locking: j = %d\n",j);
       continue;
     }
     pthread_mutex_unlock(&input->mutex);

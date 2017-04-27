@@ -63,5 +63,7 @@ int main(int argc, char *argv[]){
   printf("waiting for file writer thread\n");
   pthread_mutex_destroy(&mutex);
   pthread_join(writeThread,NULL);
+  free(matrixAttractor);
+  free(matrixIterations);
   printf("DONE\n");
 }
