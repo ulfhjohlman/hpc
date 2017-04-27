@@ -77,28 +77,3 @@ void newtonIteration(double * z_re, double * z_im, int d){
   *z_im = *z_im * (d-1)/d + sin(-zd1_arg)/(d*zd1_abs);
   return;
 }
-/*void newtonIteration(double * z_re, double * z_im,int d){
-  //z = z - (cpow(z,d)-1)/(d*cpow(z,d-1));
-  double z_abs = hypot(*z_re,*z_im);
-  double z_arg = atan2(*z_im,*z_re);
-
-  double numerator_abs = pow(z_abs,d);
-  double numerator_arg = z_arg * d;
-
-  double numerator_re = numerator_abs*cos(numerator_arg)-1;
-  double numerator_im = numerator_abs*sin(numerator_arg);
-
-  numerator_abs = hypot(numerator_re,numerator_im);
-  numerator_arg = atan2(numerator_im,numerator_re);
-
-  double denominator_abs = d*pow(z_abs,d-1);
-  double denominator_arg = z_arg * (d-1);
-
-  numerator_abs = numerator_abs/denominator_abs;
-  numerator_arg = numerator_arg - denominator_arg;
-
-  *z_re = *z_re - numerator_abs*cos(numerator_arg);
-  *z_im = *z_im - numerator_abs*sin(numerator_arg);
-  return;
-}
-*/
