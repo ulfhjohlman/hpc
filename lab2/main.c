@@ -60,10 +60,12 @@ int main(int argc, char *argv[]){
   for(i=0;i<nThreads;i++){
     pthread_join(threads[i], NULL);
   }
-  printf("waiting for file writer thread\n");
   pthread_mutex_destroy(&mutex);
+
+  printf("waiting for file writer thread\n");
   pthread_join(writeThread,NULL);
   free(matrixAttractor);
   free(matrixIterations);
+
   printf("DONE\n");
 }

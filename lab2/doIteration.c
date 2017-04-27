@@ -18,7 +18,6 @@ double * getRoots(int exp){
 void  * runPixelCalc(void *args){
   input_struct * input = args;
   int d = input->exponent;
-  double a,b,c,k,e,f,g,h;
   int currentPixel=0;
   while(1){
     if(currentPixel % input->size == 0){ //start a new row
@@ -50,8 +49,7 @@ void  * runPixelCalc(void *args){
         input->nIterations[currentPixel] = iter;
         goto NEXT_PIXEL;
       }
-
-      newtonIteration(&z_re,&z_im,d,&a,&b,&c,&k,&e,&f,&g,&h);
+      newtonIteration(&z_re,&z_im,d);
       iter++;
     }
     NEXT_PIXEL: currentPixel++;
@@ -59,29 +57,48 @@ void  * runPixelCalc(void *args){
 }
 
 /* 1 newton iteration of the given function*/
-void newtonIteration(double * z_re, double * z_im,int d, double * numerator_abs,
-   double * numerator_arg, double * denominator_abs, double * denominator_arg,
-   double * numerator_re, double * numerator_im, double * z_abs, double * z_arg){
-  //z = z - (cpow(z,d)-1)/(d*cpow(z,d-1));
-  *z_abs = hypot(*z_re,*z_im);
-  *z_arg = atan2(*z_im,*z_re);
+void newtonIteration(double * z_re, double * z_im, int d){
+  if(d==1){
+    *z_re = 1;
+    *z_im = 0;
+    return;
+  }
+  if(d==2){
+    *z_re = *z_re/2 + *z_re/(2*((*z_re)*(*z_re) + (*z_im)*(*z_im)));
+    *z_im = *z_im/2 - *z_im/(2*((*z_re)*(*z_re) + (*z_im)*(*z_im)));
+    return;
+  }
+  double z_abs = hypot(*z_re,*z_im);
+  double z_arg = atan2(*z_im,*z_re);
+  double zd1_abs = pow(z_abs,d-1);
+  double zd1_arg = z_arg * (d-1);
 
-   *numerator_abs = pow(*z_abs,d);
-   *numerator_arg = *z_arg * d;
-
-   *numerator_re = *numerator_abs*cos(*numerator_arg)-1;
-   *numerator_im = *numerator_abs*sin(*numerator_arg);
-
-  *numerator_abs = hypot(*numerator_re,*numerator_im);
-  *numerator_arg = atan2(*numerator_im,*numerator_re);
-
-   *denominator_abs = d*pow(*z_abs,d-1);
-   *denominator_arg = *z_arg * (d-1);
-
-  *numerator_abs = *numerator_abs/ *denominator_abs;
-  *numerator_arg = *numerator_arg - *denominator_arg;
-
-  *z_re = *z_re - *numerator_abs*cos(*numerator_arg);
-  *z_im = *z_im - *numerator_abs*sin(*numerator_arg);
+  *z_re = *z_re * (d-1)/d + cos(zd1_arg)/(d*zd1_abs);
+  *z_im = *z_im * (d-1)/d + sin(-zd1_arg)/(d*zd1_abs);
   return;
 }
+/*void newtonIteration(double * z_re, double * z_im,int d){
+  //z = z - (cpow(z,d)-1)/(d*cpow(z,d-1));
+  double z_abs = hypot(*z_re,*z_im);
+  double z_arg = atan2(*z_im,*z_re);
+
+  double numerator_abs = pow(z_abs,d);
+  double numerator_arg = z_arg * d;
+
+  double numerator_re = numerator_abs*cos(numerator_arg)-1;
+  double numerator_im = numerator_abs*sin(numerator_arg);
+
+  numerator_abs = hypot(numerator_re,numerator_im);
+  numerator_arg = atan2(numerator_im,numerator_re);
+
+  double denominator_abs = d*pow(z_abs,d-1);
+  double denominator_arg = z_arg * (d-1);
+
+  numerator_abs = numerator_abs/denominator_abs;
+  numerator_arg = numerator_arg - denominator_arg;
+
+  *z_re = *z_re - numerator_abs*cos(numerator_arg);
+  *z_im = *z_im - numerator_abs*sin(numerator_arg);
+  return;
+}
+*/
