@@ -13,8 +13,8 @@ double * getRoots(int exp){
 	return ret;
 }
 
-/* takes one pixel and performs the described newton iteration procedure.
-   Saves number of iterations and the attracting root to the input pointers */
+/* performs the described newton iteration procedure on a row-wise basis.
+   Saves number of iterations and the attracting root to the input matrixes */
 void  * runPixelCalc(void *args){
   input_struct * input = args;
   int d = input->exponent;
@@ -26,13 +26,29 @@ void  * runPixelCalc(void *args){
       input->nextRowToDo++;
       pthread_mutex_unlock(&input->mutex);
       if(currentPixel >= input->size*input->size){
-        return 0;
+        return 0; //all rows done
+      }
+      //if we are past halfway (+buffer), make use of the conjugate's solution
+      if(currentPixel>= input->size*(input->size/2 +10+input->nThreads)){
+        int conjugateToCurrentPixel = input->size*(input->size-1) - currentPixel;
+        for(int k =0;k<input->size;k++){
+          if(input->attractor[conjugateToCurrentPixel]==0 || input->attractor[conjugateToCurrentPixel]==d){
+            input->attractor[currentPixel] = input->attractor[conjugateToCurrentPixel];
+          }
+          else{
+            input->attractor[currentPixel] = d - input->attractor[conjugateToCurrentPixel];
+          }
+          input->nIterations[currentPixel] = input->nIterations[conjugateToCurrentPixel];
+          currentPixel++;
+          conjugateToCurrentPixel++;
+        }
+        continue;
       }
     }
     double x = currentPixel % input->size;
     double y = (currentPixel - x)/input->size;
-    double z_re = -2 + y* 4/(double)input->size;
-    double z_im = 2 - x * 4/(double)input->size;
+    double z_re = -2 + x* 4/(double)input->size;
+    double z_im = 2 - y * 4/(double)input->size;
     int iter=0;
     while(1){
       /* check exit conditions */
@@ -52,6 +68,7 @@ void  * runPixelCalc(void *args){
       newtonIteration(&z_re,&z_im,d);
       iter++;
     }
+
     NEXT_PIXEL: currentPixel++;
   }
 }
@@ -75,5 +92,6 @@ void newtonIteration(double * z_re, double * z_im, int d){
 
   *z_re = *z_re * (d-1)/d + cos(zd1_arg)/(d*zd1_abs);
   *z_im = *z_im * (d-1)/d + sin(-zd1_arg)/(d*zd1_abs);
+
   return;
 }

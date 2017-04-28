@@ -21,7 +21,7 @@ char* getPPMColor(int x){
     return " 1 1 1 ";
   if(x == 7)
     return " 1 0 1 ";
-  printf("ERR: no color\n");
+  printf("ERR: no color #%d:\n",x);
   exit(1);
 }
 
