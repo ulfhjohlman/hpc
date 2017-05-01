@@ -44,8 +44,8 @@ void * runMakePPM(void * args){
     printf("Error opening files!\n");
     exit(1);
   }
-  fprintf(frgb,"P3\n%d %d\n%d\n", input->size, input->size, maxColorValueRGB);
-  fprintf(fbw,"P3\n%d %d\n%d\n", input->size, input->size, maxColorValueBW);
+  fprintf(frgb,"P3\n%ld %ld\n%d\n", input->size, input->size, maxColorValueRGB);
+  fprintf(fbw,"P3\n%ld %ld\n%d\n", input->size, input->size, maxColorValueBW);
   int i,j;
   char x;
   j=0;

@@ -26,7 +26,6 @@ void  * runPixelCalc(void *args){
       input->nextRowToDo++;
       pthread_mutex_unlock(&input->mutex);
       if(currentPixel >= input->size*input->size){
-        printf("curPix: %ld\n",currentPixel);
         return 0; //all rows done
       }
       //if we are past halfway (+buffer), make use of the conjugate's solution
