@@ -3,9 +3,7 @@
 #include "doIteration.h"
 enum ppmMode {RGB,BW};
 
-char* getPPMColor(int x);
-
-char* getPPMBW(int x, char* str);
+char* getPPMColor(char x);
 
 void * runMakePPM(void * args);
 

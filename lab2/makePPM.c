@@ -4,7 +4,7 @@
 #include "makePPM.h"
 
 /* Gets a color to represent an integer between 0-6 */
-char* getPPMColor(int x){
+char* getPPMColor(char x){
   if(x == 0)
     return " 0 0 2 ";
   if(x == 1)
@@ -46,7 +46,8 @@ void * runMakePPM(void * args){
   }
   fprintf(frgb,"P3\n%d %d\n%d\n", input->size, input->size, maxColorValueRGB);
   fprintf(fbw,"P3\n%d %d\n%d\n", input->size, input->size, maxColorValueBW);
-  int i,j,x;
+  int i,j;
+  char x;
   j=0;
   while(1){
     pthread_mutex_lock(&input->mutex);

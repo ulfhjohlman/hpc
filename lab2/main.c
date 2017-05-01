@@ -28,9 +28,9 @@ int main(int argc, char *argv[]){
     exponent = (int) strtol(argv[optind],(char**)NULL,10);
 
   /* stores number of iterations required before aborting computations */
-  int * matrixIterations = malloc(size*size*sizeof(int));
+  char * matrixIterations = malloc(size*size*sizeof(char));
   /* stores the enumeration of the root the element converges towards */
-  int * matrixAttractor = malloc(size*size*sizeof(int));;
+  char * matrixAttractor = malloc(size*size*sizeof(char));;
 
   /* gets roots of the equation f(x)=x^d-1 depending on chosen exponent d */
   double * roots = getRoots(exponent);

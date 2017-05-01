@@ -12,8 +12,8 @@ void * runPixelCalc(void * args);
 void newtonIteration(double * z_re, double * z_im, int d);
 
 typedef struct{
-  int * nIterations;
-  int * attractor;
+  char * nIterations;
+  char * attractor;
   double * roots;
   int exponent;
   int size;

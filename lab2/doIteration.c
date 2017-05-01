@@ -17,7 +17,7 @@ double * getRoots(int exp){
    Saves number of iterations and the attracting root to the input matrixes */
 void  * runPixelCalc(void *args){
   input_struct * input = args;
-  int d = input->exponent;
+  char d = (char) input->exponent;
   int currentPixel=0;
   while(1){
     if(currentPixel % input->size == 0){ //start a new row
@@ -49,10 +49,10 @@ void  * runPixelCalc(void *args){
     double y = (currentPixel - x)/input->size;
     double z_re = -2 + x* 4/(double)input->size;
     double z_im = 2 - y * 4/(double)input->size;
-    int iter=0;
+    char iter=0;
     while(1){
       /* check exit conditions */
-      for(int i=0;i<d;i++){
+      for(char i=0;i<d;i++){
         //if(cabs(input->roots[i]-z) < 0.001){
 	       if( hypot(z_re-input->roots[i*2],z_im-input->roots[i*2+1]) < 0.001 ){
 	          input->attractor[currentPixel] = i;
