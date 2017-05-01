@@ -18,7 +18,7 @@ int main(int argc, char *argv[]){
   while ((opt = getopt(argc, argv, "l:t:")) != -1) {
         switch (opt) {
         case 't': nThreads = (int) strtol(optarg,(char**)NULL,10); break;
-        case 'l': size = (int) strtol(optarg,(char**)NULL,10); break;
+        case 'l': size = (long) strtol(optarg,(char**)NULL,10); break;
         default:
             fprintf(stderr, "Usage: %s [-t][threads] [-l][rows&columns] [exponent d]\n", argv[0]);
             exit(EXIT_FAILURE);

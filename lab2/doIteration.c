@@ -18,7 +18,7 @@ double * getRoots(int exp){
 void  * runPixelCalc(void *args){
   input_struct * input = args;
   char d = (char) input->exponent;
-  int currentPixel=0;
+  long currentPixel=0;
   while(1){
     if(currentPixel % input->size == 0){ //start a new row
       pthread_mutex_lock(&input->mutex);
@@ -26,6 +26,7 @@ void  * runPixelCalc(void *args){
       input->nextRowToDo++;
       pthread_mutex_unlock(&input->mutex);
       if(currentPixel >= input->size*input->size){
+        printf("curPix: %ld\n",currentPixel);
         return 0; //all rows done
       }
       //if we are past halfway (+buffer), make use of the conjugate's solution

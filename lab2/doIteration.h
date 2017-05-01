@@ -16,7 +16,7 @@ typedef struct{
   char * attractor;
   double * roots;
   int exponent;
-  int size;
+  long size;
   pthread_mutex_t mutex;
   int nextRowToDo;
   int nThreads;
