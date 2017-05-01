@@ -30,8 +30,8 @@ void  * runPixelCalc(void *args){
       }
       //if we are past halfway (+buffer), make use of the conjugate's solution
       if(currentPixel>= input->size*(input->size/2 +10+input->nThreads)){
-        int conjugateToCurrentPixel = input->size*(input->size-1) - currentPixel;
-        for(int k =0;k<input->size;k++){
+        long conjugateToCurrentPixel = input->size*(input->size-1) - currentPixel;
+        for(long k =0;k<input->size;k++){
           if(input->attractor[conjugateToCurrentPixel]==0 || input->attractor[conjugateToCurrentPixel]==d){
             input->attractor[currentPixel] = input->attractor[conjugateToCurrentPixel];
           }

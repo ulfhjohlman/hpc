@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include "makePPM.h"
+#include<math.h>
 
 /* Gets a color to represent an integer between 0-6 */
 char* getPPMColor(char x){
@@ -48,6 +49,12 @@ void * runMakePPM(void * args){
   fprintf(fbw,"P3\n%ld %ld\n%d\n", input->size, input->size, maxColorValueBW);
   int i,j;
   char x;
+  char* str = malloc(8*sizeof(char));
+  str[0] = ' ';
+  str[2] = ' ';
+  str[4] = ' ';
+  str[6] = ' ';
+  str[7] = '\0';
   j=0;
   while(1){
     pthread_mutex_lock(&input->mutex);
@@ -60,9 +67,20 @@ void * runMakePPM(void * args){
     pthread_mutex_unlock(&input->mutex);
 
     for(i=0;i<input->size;i++){
-      fprintf(frgb,"%s", getPPMColor(input->attractor[i+input->size*j]));
-      x = input->nIterations[i+input->size*j];
-      fprintf(fbw," %d %d %d ", x,x,x);
+      //fprintf(frgb,"%s", getPPMColor(input->attractor[input->size*j+i]));
+      //x = input->nIterations[input->size*j+i];
+      //fprintf(fbw," %d %d %d ", x,x,x);
+
+      fwrite(getPPMColor(input->attractor[input->size*j+i]),1,8,frgb);
+      x = input->nIterations[input->size*j+i] + 48;
+      if(x>57){
+        x = 57;
+      }
+      str[1]=x;
+      str[3]=x;
+      str[5]=x;
+      fwrite(str,1,8,fbw);
+
     }
     fprintf(frgb,"\n");
     fprintf(fbw,"\n");

@@ -31,7 +31,9 @@ int main(int argc, char *argv[]){
   char * matrixIterations = malloc(size*size*sizeof(char));
   /* stores the enumeration of the root the element converges towards */
   char * matrixAttractor = malloc(size*size*sizeof(char));;
-
+  if(matrixIterations == NULL || matrixAttractor == NULL){
+    printf("Memmory allocation failure.\n");
+  }
   /* gets roots of the equation f(x)=x^d-1 depending on chosen exponent d */
   double * roots = getRoots(exponent);
 
