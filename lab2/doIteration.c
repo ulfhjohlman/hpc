@@ -66,7 +66,9 @@ void  * runPixelCalc(void *args){
         goto NEXT_PIXEL;
       }
       newtonIteration(&z_re,&z_im,d);
-      iter++;
+      if(iter<9){
+        iter++;
+      }
     }
 
     NEXT_PIXEL: currentPixel++;
@@ -87,7 +89,23 @@ void newtonIteration(double * z_re, double * z_im, int d){
   }
   double z_abs = hypot(*z_re,*z_im);
   double z_arg = atan2(*z_im,*z_re);
-  double zd1_abs = pow(z_abs,d-1);
+  //double zd1_abs = pow(z_abs,d-1);
+  double zd1_abs;
+  if(d==3){
+    zd1_abs = z_abs * z_abs ;
+  }
+  else if(d==4){
+    zd1_abs = z_abs * z_abs * z_abs;
+  }
+  else if(d==5){
+    zd1_abs = z_abs * z_abs * z_abs * z_abs;
+  }
+  else if(d==6){
+    zd1_abs = z_abs * z_abs * z_abs * z_abs * z_abs;
+  }
+  else if(d==7){
+    zd1_abs = z_abs * z_abs * z_abs * z_abs * z_abs * z_abs;
+  }
   double zd1_arg = z_arg * (d-1);
 
   *z_re = *z_re * (d-1)/d + cos(zd1_arg)/(d*zd1_abs);

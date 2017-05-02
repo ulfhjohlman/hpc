@@ -56,16 +56,17 @@ int main(int argc, char *argv[]){
     pthread_create(&threads[i], NULL ,runPixelCalc, &in_data);
   }
   pthread_t writeThread;
+  //pthread_create(&writeThread, NULL, runMakePPM,&in_data);
   pthread_create(&writeThread, NULL, runMakePPM,&in_data);
-
   printf("waiting for calculation threads\n");
   for(i=0;i<nThreads;i++){
     pthread_join(threads[i], NULL);
   }
-  pthread_mutex_destroy(&mutex);
+
 
   printf("waiting for file writer thread\n");
   pthread_join(writeThread,NULL);
+  pthread_mutex_destroy(&mutex);
   free(matrixAttractor);
   free(matrixIterations);
 

@@ -62,6 +62,7 @@ void * runMakePPM(void * args){
     if(j > input->nextRowToDo-(10+input->nThreads) && input->nextRowToDo < input->size){
       pthread_mutex_unlock(&input->mutex);
       usleep(100000);
+      //printf("writer caught up; sleeping\n");
       continue;
     }
     pthread_mutex_unlock(&input->mutex);
@@ -71,15 +72,12 @@ void * runMakePPM(void * args){
       //x = input->nIterations[input->size*j+i];
       //fprintf(fbw," %d %d %d ", x,x,x);
 
-      fwrite(getPPMColor(input->attractor[input->size*j+i]),1,8,frgb);
-      x = input->nIterations[input->size*j+i] + 48;
-      if(x>57){
-        x = 57;
-      }
+      fwrite(getPPMColor(input->attractor[input->size*j+i]),1,7,frgb);
+      x = input->nIterations[input->size*j+i]+48;
       str[1]=x;
       str[3]=x;
       str[5]=x;
-      fwrite(str,1,8,fbw);
+      fwrite(str,1,7,fbw);
 
     }
     fprintf(frgb,"\n");
