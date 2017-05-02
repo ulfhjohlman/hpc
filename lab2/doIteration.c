@@ -20,7 +20,7 @@ void  * runPixelCalc(void *args){
   input_struct * input = args;
   int d = input->exponent;
   int blockrows = input->blockrows;
-  int size = input->size;
+  long size = (long)input->size;
   long currentPixel=0;
   double x;
   double y;

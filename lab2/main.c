@@ -27,7 +27,7 @@ int main(int argc, char *argv[]){
   if(optind < argc)
     exponent = (int) strtol(argv[optind],(char**)NULL,10);
 
-  int blockrows = 200; //nRows in block
+  int blockrows = 1000; //nRows in block
   /* stores number of iterations required before aborting computations */
   int * matrixIterations = malloc(blockrows*size*sizeof(int));
   /* stores the enumeration of the root the element converges towards */

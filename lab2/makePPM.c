@@ -61,7 +61,7 @@ void * runMakePPM(void * args){
     input->currentWriteRow = j;
 
     //buffer rows to prevent writing uncalculated rows
-    if(j > input->nextRowToDo-(25+input->nThreads) && input->nextRowToDo < input->size){
+    if(j > input->nextRowToDo-(input->blockrows/8+input->nThreads) && input->nextRowToDo < input->size){
       pthread_mutex_unlock(&input->mutex);
       usleep(10000);
       //printf("writer caught up; sleeping\n");
