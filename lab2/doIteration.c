@@ -72,12 +72,18 @@ void  * runPixelCalc(void *args){
         //if(cabs(input->roots[i]-z) < 0.001){
 	       if( hypot(z_re-input->roots[i*2],z_im-input->roots[i*2+1]) < 0.001 ){
 	          input->attractor[currentPixel%(blockrows * size)] = i;
+            if(iter>9){
+              iter=9;
+            }
             input->nIterations[currentPixel%(blockrows * size)] = iter;
             goto NEXT_PIXEL;
           }
       }
       if((fabs(z_re)<0.0007 && fabs(z_im)<0.0007) || z_re > 10E10 || z_im > 10E10){
         input->attractor[currentPixel%(blockrows * size)] = d; /* 'exponent d' is used as the enumeration for the bonus root for divergent x */
+        if(iter>9){
+          iter=9;
+        }
         input->nIterations[currentPixel%(blockrows * size)] = iter;
         goto NEXT_PIXEL;
       }
@@ -95,13 +101,16 @@ void newtonIteration(double * z_re, double * z_im, int d){
     *z_im = 0;
     return;
   }
-  if(d==2){
-    *z_re = *z_re/2 + *z_re/(2*((*z_re)*(*z_re) + (*z_im)*(*z_im)));
-    *z_im = *z_im/2 - *z_im/(2*((*z_re)*(*z_re) + (*z_im)*(*z_im)));
-    return;
-  }
+
   double z_abs = hypot(*z_re,*z_im);
   double z_arg = atan2(*z_im,*z_re);
+  if(d==2){
+    //*z_re = *z_re/2 + *z_re/(2*((*z_re)*(*z_re) + (*z_im)*(*z_im)));
+    //*z_im = *z_im/2 - *z_im/(2*((*z_re)*(*z_re) + (*z_im)*(*z_im)));
+    *z_re = *z_re/2 + cos(z_arg)/(z_abs*2);
+    *z_im = *z_im/2 + sin(z_arg)/(z_abs*2);
+    return;
+  }
   //double zd1_abs = pow(z_abs,d-1);
   double zd1_abs;
   if(d==3){
