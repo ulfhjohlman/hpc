@@ -27,10 +27,11 @@ int main(int argc, char *argv[]){
   if(optind < argc)
     exponent = (int) strtol(argv[optind],(char**)NULL,10);
 
+  int blockrows = 100; //nRows in block
   /* stores number of iterations required before aborting computations */
-  char * matrixIterations = malloc(size*size*sizeof(char));
+  char * matrixIterations = malloc(blockrows*size*sizeof(char));
   /* stores the enumeration of the root the element converges towards */
-  char * matrixAttractor = malloc(size*size*sizeof(char));;
+  char * matrixAttractor = malloc(blockrows*size*sizeof(char));;
   if(matrixIterations == NULL || matrixAttractor == NULL){
     printf("Memmory allocation failure.\n");
   }
@@ -44,6 +45,7 @@ int main(int argc, char *argv[]){
   pthread_mutex_t mutex;
   pthread_mutex_init(&mutex,NULL);
 
+  in_data.blockrows = blockrows;
   in_data.nIterations = matrixIterations;
   in_data.attractor = matrixAttractor;
   in_data.roots = roots;
@@ -51,6 +53,7 @@ int main(int argc, char *argv[]){
   in_data.size = size;
   in_data.mutex = mutex;
   in_data.nextRowToDo = 0;
+  in_data.currentWriteRow = 0;
   in_data.nThreads = nThreads;
   for(i=0;i<nThreads;i++){
     pthread_create(&threads[i], NULL ,runPixelCalc, &in_data);

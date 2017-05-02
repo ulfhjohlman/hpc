@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<unistd.h>
 #include "doIteration.h"
 
 /* returns the roots to the equation f(x)=(x^exp)-1 in form [root1_re, root1_im, root2_re,...]*/
@@ -22,12 +23,20 @@ void  * runPixelCalc(void *args){
   while(1){
     if(currentPixel % input->size == 0){ //start a new row
       pthread_mutex_lock(&input->mutex);
+      if(input->nextRowToDo >= input->blockrows +input->currentWriteRow){ //50 row buffer till writer
+          pthread_mutex_unlock(&input->mutex);
+          usleep(10000);
+          //printf("calc pulling ahead; sleeping\n");
+          continue;
+      }
       currentPixel = input->nextRowToDo * input->size;
       input->nextRowToDo++;
+
       pthread_mutex_unlock(&input->mutex);
       if(currentPixel >= input->size*input->size){
         return 0; //all rows done
       }
+      /*
       //if we are past halfway (+buffer), make use of the conjugate's solution
       if(currentPixel>= input->size*(input->size/2 +10+input->nThreads)){
         long conjugateToCurrentPixel = input->size*(input->size-1) - currentPixel;
@@ -43,7 +52,7 @@ void  * runPixelCalc(void *args){
           conjugateToCurrentPixel++;
         }
         continue;
-      }
+      } */
     }
     double x = currentPixel % input->size;
     double y = (currentPixel - x)/input->size;
@@ -55,14 +64,14 @@ void  * runPixelCalc(void *args){
       for(char i=0;i<d;i++){
         //if(cabs(input->roots[i]-z) < 0.001){
 	       if( hypot(z_re-input->roots[i*2],z_im-input->roots[i*2+1]) < 0.001 ){
-	          input->attractor[currentPixel] = i;
-            input->nIterations[currentPixel] = iter;
+	          input->attractor[currentPixel%(input->blockrows * input->size)] = i;
+            input->nIterations[currentPixel%(input->blockrows * input->size)] = iter;
             goto NEXT_PIXEL;
           }
       }
       if((fabs(z_re)<0.0007 && fabs(z_im)<0.0007) || z_re > 10E10 || z_im > 10E10){
-        input->attractor[currentPixel] = d; /* 'exponent d' is used as the enumeration for the bonus root for divergent x */
-        input->nIterations[currentPixel] = iter;
+        input->attractor[currentPixel%(input->blockrows * input->size)] = d; /* 'exponent d' is used as the enumeration for the bonus root for divergent x */
+        input->nIterations[currentPixel%(input->blockrows * input->size)] = iter;
         goto NEXT_PIXEL;
       }
       newtonIteration(&z_re,&z_im,d);

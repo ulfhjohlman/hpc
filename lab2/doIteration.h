@@ -12,6 +12,7 @@ void * runPixelCalc(void * args);
 void newtonIteration(double * z_re, double * z_im, int d);
 
 typedef struct{
+  int blockrows;
   char * nIterations;
   char * attractor;
   double * roots;
@@ -19,6 +20,7 @@ typedef struct{
   long size;
   pthread_mutex_t mutex;
   int nextRowToDo;
+  int currentWriteRow;
   int nThreads;
 }input_struct;
 
