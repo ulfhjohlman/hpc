@@ -19,28 +19,35 @@ double * getRoots(int exp){
 void  * runPixelCalc(void *args){
   input_struct * input = args;
   char d = (char) input->exponent;
+  int blockrows = input->blockrows;
+  int size = input->size;
   long currentPixel=0;
+  double x;
+  double y;
+  double z_re;
+  double z_im;
+  char iter;
   while(1){
-    if(currentPixel % input->size == 0){ //start a new row
+    if(currentPixel % size == 0){ //start a new row
       pthread_mutex_lock(&input->mutex);
-      if(input->nextRowToDo >= input->blockrows +input->currentWriteRow){ //50 row buffer till writer
+      if(input->nextRowToDo >= blockrows +input->currentWriteRow){ //50 row buffer till writer
           pthread_mutex_unlock(&input->mutex);
-          usleep(10000);
+          usleep(1000);
           //printf("calc pulling ahead; sleeping\n");
           continue;
       }
-      currentPixel = input->nextRowToDo * input->size;
+      currentPixel = input->nextRowToDo * size;
       input->nextRowToDo++;
 
       pthread_mutex_unlock(&input->mutex);
-      if(currentPixel >= input->size*input->size){
+      if(currentPixel >= size*size){
         return 0; //all rows done
       }
       /*
       //if we are past halfway (+buffer), make use of the conjugate's solution
-      if(currentPixel>= input->size*(input->size/2 +10+input->nThreads)){
-        long conjugateToCurrentPixel = input->size*(input->size-1) - currentPixel;
-        for(long k =0;k<input->size;k++){
+      if(currentPixel>= size*(size/2 +10+input->nThreads)){
+        long conjugateToCurrentPixel = size*(size-1) - currentPixel;
+        for(long k =0;k<size;k++){
           if(input->attractor[conjugateToCurrentPixel]==0 || input->attractor[conjugateToCurrentPixel]==d){
             input->attractor[currentPixel] = input->attractor[conjugateToCurrentPixel];
           }
@@ -54,32 +61,29 @@ void  * runPixelCalc(void *args){
         continue;
       } */
     }
-    double x = currentPixel % input->size;
-    double y = (currentPixel - x)/input->size;
-    double z_re = -2 + x* 4/(double)input->size;
-    double z_im = 2 - y * 4/(double)input->size;
-    char iter=0;
+    x = currentPixel % size;
+    y = (currentPixel - x)/size;
+    z_re = -2 + x* 4/(double)size;
+    z_im = 2 - y * 4/(double)size;
+    iter=0;
     while(1){
       /* check exit conditions */
       for(char i=0;i<d;i++){
         //if(cabs(input->roots[i]-z) < 0.001){
 	       if( hypot(z_re-input->roots[i*2],z_im-input->roots[i*2+1]) < 0.001 ){
-	          input->attractor[currentPixel%(input->blockrows * input->size)] = i;
-            input->nIterations[currentPixel%(input->blockrows * input->size)] = iter;
+	          input->attractor[currentPixel%(blockrows * size)] = i;
+            input->nIterations[currentPixel%(blockrows * size)] = iter;
             goto NEXT_PIXEL;
           }
       }
       if((fabs(z_re)<0.0007 && fabs(z_im)<0.0007) || z_re > 10E10 || z_im > 10E10){
-        input->attractor[currentPixel%(input->blockrows * input->size)] = d; /* 'exponent d' is used as the enumeration for the bonus root for divergent x */
-        input->nIterations[currentPixel%(input->blockrows * input->size)] = iter;
+        input->attractor[currentPixel%(blockrows * size)] = d; /* 'exponent d' is used as the enumeration for the bonus root for divergent x */
+        input->nIterations[currentPixel%(blockrows * size)] = iter;
         goto NEXT_PIXEL;
       }
       newtonIteration(&z_re,&z_im,d);
-      if(iter<9){
-        iter++;
-      }
+      iter++;
     }
-
     NEXT_PIXEL: currentPixel++;
   }
 }
