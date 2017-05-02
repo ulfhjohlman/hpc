@@ -27,7 +27,7 @@ int main(int argc, char *argv[]){
   if(optind < argc)
     exponent = (int) strtol(argv[optind],(char**)NULL,10);
 
-  int blockrows = 100; //nRows in block
+  int blockrows = 200; //nRows in block
   /* stores number of iterations required before aborting computations */
   int * matrixIterations = malloc(blockrows*size*sizeof(int));
   /* stores the enumeration of the root the element converges towards */
@@ -59,7 +59,6 @@ int main(int argc, char *argv[]){
     pthread_create(&threads[i], NULL ,runPixelCalc, &in_data);
   }
   pthread_t writeThread;
-  //pthread_create(&writeThread, NULL, runMakePPM,&in_data);
   pthread_create(&writeThread, NULL, runMakePPM,&in_data);
   printf("waiting for calculation threads\n");
   for(i=0;i<nThreads;i++){

@@ -30,7 +30,7 @@ void  * runPixelCalc(void *args){
   while(1){
     if(currentPixel % size == 0){ //start a new row
       pthread_mutex_lock(&input->mutex);
-      if(input->nextRowToDo >= blockrows +input->currentWriteRow){ //50 row buffer till writer
+      if(input->nextRowToDo >= blockrows +input->currentWriteRow){ //buffer till writer
           pthread_mutex_unlock(&input->mutex);
           usleep(1000);
           //printf("calc pulling ahead; sleeping\n");
@@ -70,7 +70,7 @@ void  * runPixelCalc(void *args){
       /* check exit conditions */
       for(int i=0;i<d;i++){
         //if(cabs(input->roots[i]-z) < 0.001){
-	       if( hypot(z_re-input->roots[i*2],z_im-input->roots[i*2+1]) < 0.001 ){
+	       if( (z_re-input->roots[i*2])*(z_re-input->roots[i*2])+(z_im-input->roots[i*2+1])*(z_im-input->roots[i*2+1]) < 0.000001 ){
 	          input->attractor[currentPixel%(blockrows * size)] = i;
             if(iter>9){
               iter=9;
