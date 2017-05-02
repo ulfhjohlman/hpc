@@ -18,7 +18,7 @@ double * getRoots(int exp){
    Saves number of iterations and the attracting root to the input matrixes */
 void  * runPixelCalc(void *args){
   input_struct * input = args;
-  char d = (char) input->exponent;
+  int d = input->exponent;
   int blockrows = input->blockrows;
   int size = input->size;
   long currentPixel=0;
@@ -68,7 +68,7 @@ void  * runPixelCalc(void *args){
     iter=0;
     while(1){
       /* check exit conditions */
-      for(char i=0;i<d;i++){
+      for(int i=0;i<d;i++){
         //if(cabs(input->roots[i]-z) < 0.001){
 	       if( hypot(z_re-input->roots[i*2],z_im-input->roots[i*2+1]) < 0.001 ){
 	          input->attractor[currentPixel%(blockrows * size)] = i;
@@ -112,11 +112,6 @@ void newtonIteration(double * z_re, double * z_im, int d){
   }
   double z_arg = atan2(*z_im,*z_re);
   double z_abs = hypot(*z_re,*z_im);
-  /*
-    tmp = *z_re/2 + *z_re/(2*((*z_re)*(*z_re) + (*z_im)*(*z_im)));
-    *z_im = *z_im/2 - *z_im/(2*((*z_re)*(*z_re) + (*z_im)*(*z_im)));
-    *z_re = tmp;
-  }*/
   //double zd1_abs = pow(z_abs,d-1);
   double zd1_abs;
   if(d==3){
