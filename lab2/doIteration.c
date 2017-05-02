@@ -26,7 +26,7 @@ void  * runPixelCalc(void *args){
   double y;
   double z_re;
   double z_im;
-  char iter;
+  int iter;
   while(1){
     if(currentPixel % size == 0){ //start a new row
       pthread_mutex_lock(&input->mutex);
@@ -75,7 +75,7 @@ void  * runPixelCalc(void *args){
             if(iter>9){
               iter=9;
             }
-            input->nIterations[currentPixel%(blockrows * size)] = iter;
+            input->nIterations[currentPixel%(blockrows * size)] = (char)iter;
             goto NEXT_PIXEL;
           }
       }
@@ -84,7 +84,7 @@ void  * runPixelCalc(void *args){
         if(iter>9){
           iter=9;
         }
-        input->nIterations[currentPixel%(blockrows * size)] = iter;
+        input->nIterations[currentPixel%(blockrows * size)] = (char)iter;
         goto NEXT_PIXEL;
       }
       newtonIteration(&z_re,&z_im,d);
@@ -102,15 +102,21 @@ void newtonIteration(double * z_re, double * z_im, int d){
     return;
   }
 
-  double z_abs = hypot(*z_re,*z_im);
-  double z_arg = atan2(*z_im,*z_re);
   if(d==2){
-    //*z_re = *z_re/2 + *z_re/(2*((*z_re)*(*z_re) + (*z_im)*(*z_im)));
-    //*z_im = *z_im/2 - *z_im/(2*((*z_re)*(*z_re) + (*z_im)*(*z_im)));
-    *z_re = *z_re/2 + cos(z_arg)/(z_abs*2);
-    *z_im = *z_im/2 + sin(z_arg)/(z_abs*2);
+    double z_abs2 = *z_re*(*z_re) + *z_im*(*z_im);
+    double tmp;
+    tmp = *z_re/2 + *z_re/(2*z_abs2);
+    *z_im = *z_im/2 - *z_im/(2*z_abs2);
+    *z_re = tmp;
     return;
   }
+  double z_arg = atan2(*z_im,*z_re);
+  double z_abs = hypot(*z_re,*z_im);
+  /*
+    tmp = *z_re/2 + *z_re/(2*((*z_re)*(*z_re) + (*z_im)*(*z_im)));
+    *z_im = *z_im/2 - *z_im/(2*((*z_re)*(*z_re) + (*z_im)*(*z_im)));
+    *z_re = tmp;
+  }*/
   //double zd1_abs = pow(z_abs,d-1);
   double zd1_abs;
   if(d==3){
