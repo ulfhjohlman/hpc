@@ -5,7 +5,7 @@
 #include<math.h>
 
 /* Gets a color to represent an integer between 0-6 */
-char* getPPMColor(char x){
+char* getPPMColor(int x){
   if(x == 0)
     return " 0 0 2 ";
   if(x == 1)
@@ -74,7 +74,7 @@ void * runMakePPM(void * args){
       //fprintf(fbw," %d %d %d ", x,x,x);
 
       fwrite(getPPMColor(input->attractor[(input->size*j+i)%(input->blockrows * input->size)]),1,7,frgb);
-      x = input->nIterations[(input->size*j+i)%(input->blockrows * input->size)]+48;
+      x = (char) input->nIterations[(input->size*j+i)%(input->blockrows * input->size)]+48;
       str[1]=x;
       str[3]=x;
       str[5]=x;

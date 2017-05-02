@@ -13,8 +13,8 @@ void newtonIteration(double * z_re, double * z_im, int d);
 
 typedef struct{
   int blockrows;
-  char * nIterations;
-  char * attractor;
+  int * nIterations;
+  int * attractor;
   double * roots;
   int exponent;
   long size;

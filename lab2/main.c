@@ -29,9 +29,9 @@ int main(int argc, char *argv[]){
 
   int blockrows = 100; //nRows in block
   /* stores number of iterations required before aborting computations */
-  char * matrixIterations = malloc(blockrows*size*sizeof(char));
+  int * matrixIterations = malloc(blockrows*size*sizeof(int));
   /* stores the enumeration of the root the element converges towards */
-  char * matrixAttractor = malloc(blockrows*size*sizeof(char));;
+  int * matrixAttractor = malloc(blockrows*size*sizeof(int));;
   if(matrixIterations == NULL || matrixAttractor == NULL){
     printf("Memmory allocation failure.\n");
   }

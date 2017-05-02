@@ -75,7 +75,7 @@ void  * runPixelCalc(void *args){
             if(iter>9){
               iter=9;
             }
-            input->nIterations[currentPixel%(blockrows * size)] = (char)iter;
+            input->nIterations[currentPixel%(blockrows * size)] = iter;
             goto NEXT_PIXEL;
           }
       }
@@ -84,7 +84,7 @@ void  * runPixelCalc(void *args){
         if(iter>9){
           iter=9;
         }
-        input->nIterations[currentPixel%(blockrows * size)] = (char)iter;
+        input->nIterations[currentPixel%(blockrows * size)] = iter;
         goto NEXT_PIXEL;
       }
       newtonIteration(&z_re,&z_im,d);
