@@ -2,6 +2,7 @@
 .PHONY : allandrun
 .PHONY : clean
 .PHONY : cleanall
+.PHONY : newton
 
 OBJS = main.o makePPM.o doIteration.o
 CFLAGS = -O3 -march=native
@@ -9,6 +10,9 @@ LIBS = -pthread -lpthread -lm
 
 all : $(OBJS)
 	$(CC) $(CFLAGS) -o newton $(OBJS) $(LIBS)
+
+newton : $(OBJS)
+		$(CC) $(CFLAGS) -o newton $(OBJS) $(LIBS)
 
 main.o : main.c makePPM.h doIteration.h
 	$(CC) $(CFLAGS) -c main.c $(LIBS)
