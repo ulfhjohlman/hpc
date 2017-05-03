@@ -59,17 +59,17 @@ int main(int argc, char *argv[]){
   }
   pthread_t writeThread;
   pthread_create(&writeThread, NULL, runMakePPM,&in_data);
-  printf("waiting for calculation threads\n");
+  //printf("waiting for calculation threads\n");
   for(i=0;i<nThreads;i++){
     pthread_join(threads[i], NULL);
   }
 
 
-  printf("waiting for file writer thread\n");
+  //printf("waiting for file writer thread\n");
   pthread_join(writeThread,NULL);
   pthread_mutex_destroy(&mutex);
   free(matrixAttractor);
   free(matrixIterations);
 
-  printf("DONE\n");
+  //printf("DONE\n");
 }
