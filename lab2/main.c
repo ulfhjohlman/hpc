@@ -3,7 +3,6 @@
 #include<unistd.h>
 #include<pthread.h>
 #include<getopt.h>
-#include<semaphore.h>
 
 #include "makePPM.h"
 #include "doIteration.h"

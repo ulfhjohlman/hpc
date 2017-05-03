@@ -14,7 +14,9 @@ double * getRoots(int exp){
 	return ret;
 }
 
-/* performs the described newton iteration procedure on a row-wise basis.
+/* performs the described newton iteration procedure on a row-wise basis. Next
+   row to calculate is determined by the input variable shared by all calculation
+   threads and accessed by a mutex.
    Saves number of iterations and the attracting root to the input matrixes */
 void  * runPixelCalc(void *args){
   input_struct * input = args;
@@ -30,21 +32,24 @@ void  * runPixelCalc(void *args){
   while(1){
     if(currentPixel % size == 0){ //start a new row
       pthread_mutex_lock(&input->mutex);
-      if(input->nextRowToDo >= blockrows +input->currentWriteRow){ //buffer till writer
+
+      //buffer till writer, if calculations threaten to loop around and
+      //catch up to the writer they sleep for 1ms.
+      if(input->nextRowToDo >= blockrows +input->currentWriteRow){
           pthread_mutex_unlock(&input->mutex);
           usleep(1000);
-          //printf("calc pulling ahead; sleeping\n");
           continue;
       }
       currentPixel = input->nextRowToDo * size;
       input->nextRowToDo++;
 
       pthread_mutex_unlock(&input->mutex);
-      if(currentPixel >= size*size){
+      if(currentPixel >= (long)size*(long)size){
         return 0; //all rows done
       }
-      /*
-      //if we are past halfway (+buffer), make use of the conjugate's solution
+
+      /* ONLY COMPATIBLE IF BLOCKROWS = ALL ROWS
+      //if we are past halfway (+buffer), make use of the conjugate's solution symmetry
       if(currentPixel>= size*(size/2 +10+input->nThreads)){
         long conjugateToCurrentPixel = size*(size-1) - currentPixel;
         for(long k =0;k<size;k++){
@@ -69,10 +74,10 @@ void  * runPixelCalc(void *args){
     while(1){
       /* check exit conditions */
       for(int i=0;i<d;i++){
-        //if(cabs(input->roots[i]-z) < 0.001){
+        //if sqrt( abs(z-root)) < 0.001 equivalent with  abs(z-root) < 0.000001
 	       if( (z_re-input->roots[i*2])*(z_re-input->roots[i*2])+(z_im-input->roots[i*2+1])*(z_im-input->roots[i*2+1]) < 0.000001 ){
 	          input->attractor[currentPixel%(blockrows * size)] = i;
-            if(iter>9){
+            if(iter>9){ //cap iter at 9 for cleaner output
               iter=9;
             }
             input->nIterations[currentPixel%(blockrows * size)] = iter;
@@ -112,7 +117,6 @@ void newtonIteration(double * z_re, double * z_im, int d){
   }
   double z_arg = atan2(*z_im,*z_re);
   double z_abs = hypot(*z_re,*z_im);
-  //double zd1_abs = pow(z_abs,d-1);
   double zd1_abs;
   if(d==3){
     zd1_abs = z_abs * z_abs ;

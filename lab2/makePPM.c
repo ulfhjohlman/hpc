@@ -27,9 +27,9 @@ char* getPPMColor(int x){
 }
 
 
-/* Prints to file an int matrix as a PPM visualisation.
-Either in attractor/color mode where the input matrix element is a number enumerationg the root of the pixel
-or convergens/black&white mode where the input matrix element is iteration number 0-10*/
+/* Prints to file the matrixes as PPM visualisations.
+One attractor/color mode where the input matrix elements are numbers enumerationg the root of the pixel
+And one convergens/black&white mode where the input matrix elements are iteration numbers 0-9*/
 void * runMakePPM(void * args){
   input_struct * input = args;
   char *fileRGB = (char*)malloc(30 * sizeof(char));
@@ -60,7 +60,7 @@ void * runMakePPM(void * args){
     pthread_mutex_lock(&input->mutex);
     input->currentWriteRow = j;
 
-    //buffer rows to prevent writing uncalculated rows
+    //some buffer rows to prevent writing uncalculated rows whos calculation thread is trailing behind
     if(j > input->nextRowToDo-(input->blockrows/8+input->nThreads) && input->nextRowToDo < input->size){
       pthread_mutex_unlock(&input->mutex);
       usleep(10000);
