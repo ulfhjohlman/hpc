@@ -22,3 +22,7 @@ cleanall : clean
 tar :
 	tar -cf hjohlman.tar Makefile main.c report.markdown
 	gzip hjohlman.tar
+
+tarMac :
+	tar --disable-copyfile -cf hjohlman.tar Makefile main.c report.markdown
+	gzip hjohlman.tar
