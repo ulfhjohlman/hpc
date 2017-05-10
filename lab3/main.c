@@ -23,18 +23,18 @@ int main(int argc, char *argv[]){
         printf("file reading error\n");
         exit(1);
     }
-    //double * coord; //coordinates of all points
-    //coord = malloc(10000*3*sizeof(double));
-    float * coord; //coordinates of all points
-    coord = malloc(10000*3*sizeof(float));
+    double * coord; //coordinates of all points
+    coord = malloc(10000*3*sizeof(double));
+    //float * coord; //coordinates of all points
+    //coord = malloc(10e5*3*sizeof(float));
 
     char * count; // holds count of distances between points in increments of 0.01
     int MAX_COUNT = 3465;// round_up(20 * sqrt(3) * 100) chars (the max distance possible is 34.65);
     count = malloc(MAX_COUNT*sizeof(char));
     int k = 0;
     int n; //num of points
-    //while(fscanf(inputFile,"%lf %lf %lf\n",&coord[k],&coord[k+1],&coord[k+2]) == 3){
-    while(fscanf(inputFile,"%f %f %f\n",&coord[k],&coord[k+1],&coord[k+2]) == 3){
+    while(fscanf(inputFile,"%lf %lf %lf\n",&coord[k],&coord[k+1],&coord[k+2]) == 3){
+    //while(fscanf(inputFile,"%f %f %f\n",&coord[k],&coord[k+1],&coord[k+2]) == 3){
         k+=3;
     }
     n = k/3;
@@ -53,15 +53,11 @@ int main(int argc, char *argv[]){
             count[(int) roundf(dist*100)]++;
         }
     }
-    int c;
-    c=0;
     for(i=0;i<MAX_COUNT;i++){
         if(count[i]>0){
             printf("%.2f %d\n",i*0.01 , count[i]);
-            c += count[i];
         }
     }
-    printf("total: %d\n",c);
     fclose(inputFile);
     free(coord);
     free(count);
