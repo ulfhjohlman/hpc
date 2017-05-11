@@ -3,19 +3,43 @@
 //#include<unistd.h>
 #include<getopt.h>
 #include<math.h>
+#include<time.h>
 
 int main(int argc, char *argv[]){
     /* parse command line arguments */
     unsigned int t=2;
+    unsigned int n=0;
     int opt;
-    while ((opt = getopt(argc, argv, "t:")) != -1) {
+    while ((opt = getopt(argc, argv, "t:n:")) != -1) {
         switch (opt) {
             case 't': t = (unsigned int) strtol(optarg,(char**)NULL,10); break;
+            case 'n': n = (unsigned int) strtol(optarg,(char**)NULL,10); break;
             default:
                 fprintf(stderr, "Usage: %s [-t][threads]\n", argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
+
+
+    //make cells file
+    if(n!=0){
+        FILE * f =fopen("cells","w");
+        if(f == NULL){
+            printf("unable to create file");
+            exit(1);
+        }
+        int l;
+        srand(time(NULL));
+        for(l=0;l<n;l++){
+            float a = -10 + (float) (rand()) / ((float) (RAND_MAX/20));
+            float b = -10 +(float) (rand()) / ((float) (RAND_MAX/20));
+            float c = -10 + (float) (rand()) / ((float) (RAND_MAX/20));
+            fprintf(f,"%.2f %.2f %.2F\n", a,b,c);
+        }
+
+        fclose(f);
+    }
+
 
     FILE * inputFile;
     inputFile = fopen("cells", "r");
@@ -32,12 +56,12 @@ int main(int argc, char *argv[]){
     int MAX_COUNT = 3465;// round_up(20 * sqrt(3) * 100) chars (the max distance possible is 34.65);
     count = calloc(MAX_COUNT,sizeof(int));
     int k = 0;
-    int n; //num of points
+    int m; //num of points
     while(fscanf(inputFile,"%lf %lf %lf\n",&coord[k],&coord[k+1],&coord[k+2]) == 3){
     //while(fscanf(inputFile,"%f %f %f\n",&coord[k],&coord[k+1],&coord[k+2]) == 3){
         k+=3;
     }
-    n = k/3;
+    m = k/3;
 
     double x,y,z;
     double dist;
@@ -53,18 +77,22 @@ int main(int argc, char *argv[]){
                 z = coord[i+2] - coord[j+2];
                 //distance between 2 points rounded to hundredths, 12.232 -> 1223
                 dist = sqrt(x*x+y*y+z*z);
-                //printf("dist: %lf, (int)dist: %d, roundf: %d\n",dist,(int)dist,(int)roundf(dist));
-		#pragma omp atomic
+                //printf("dist: %.2lf\n", (float)((int)roundf(dist*100))/100);
+		        #pragma omp atomic
                 count[(int) roundf(dist*100)]++;
             }
         }
     }
-
+    int c=0;
     for(i=0;i<MAX_COUNT;i++){
         if(count[i]>0){
             printf("%.2f %d\n",i*0.01 , count[i]);
+            c++;
         }
     }
+    /*if(c!= (m-1)*m/2.0 ){
+        printf("ERR: total: %d\n",c);
+    }*/
     fclose(inputFile);
     free(coord);
     free(count);
