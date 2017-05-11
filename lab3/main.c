@@ -18,7 +18,7 @@ int main(int argc, char *argv[]){
     }
 
     FILE * inputFile;
-    inputFile = fopen("cells.txt", "r");
+    inputFile = fopen("cells", "r");
     if(inputFile == NULL){
         printf("file reading error\n");
         exit(1);
@@ -28,9 +28,9 @@ int main(int argc, char *argv[]){
     //float * coord; //coordinates of all points
     //coord = malloc(10e5*3*sizeof(float));
 
-    char * count; // holds count of distances between points in increments of 0.01
+    int * count; // holds count of distances between points in increments of 0.01
     int MAX_COUNT = 3465;// round_up(20 * sqrt(3) * 100) chars (the max distance possible is 34.65);
-    count = malloc(MAX_COUNT*sizeof(char));
+    count = calloc(MAX_COUNT,sizeof(int));
     int k = 0;
     int n; //num of points
     while(fscanf(inputFile,"%lf %lf %lf\n",&coord[k],&coord[k+1],&coord[k+2]) == 3){
@@ -45,18 +45,17 @@ int main(int argc, char *argv[]){
     #pragma omp parallel num_threads(t)
     {
         //#pragma omp for collapse(2) private(i,j)
-        #pragma omp for schedule(dynamic) private(i,j)
-        {
-            for(i=0;i<k;i+=3){
-                for(j=i+3;j<k;j+=3){
-                    x = coord[i] - coord[j];
-                    y = coord[i+1] - coord[j+1];
-                    z = coord[i+2] - coord[j+2];
-                    //distance between 2 points rounded to hundredths, 12.232 -> 1223
-                    dist = sqrt(x*x+y*y+z*z);
-                    //printf("dist: %lf, (int)dist: %d, roundf: %d\n",dist,(int)dist,(int)roundf(dist));
-                    count[(int) roundf(dist*100)]++;
-                }
+        #pragma omp for schedule(dynamic) private(i,j,x,y,z,dist)
+        for(i=0;i<k;i+=3){
+            for(j=i+3;j<k;j+=3){
+                x = coord[i] - coord[j];
+                y = coord[i+1] - coord[j+1];
+                z = coord[i+2] - coord[j+2];
+                //distance between 2 points rounded to hundredths, 12.232 -> 1223
+                dist = sqrt(x*x+y*y+z*z);
+                //printf("dist: %lf, (int)dist: %d, roundf: %d\n",dist,(int)dist,(int)roundf(dist));
+		#pragma omp atomic
+                count[(int) roundf(dist*100)]++;
             }
         }
     }
