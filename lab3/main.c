@@ -15,13 +15,13 @@ void scan(FILE * inputFile,double * coord, int *r){
     return;
 }
 
-void compute(double * coord, int * count,int k){
+void compute(double * coord, int * count,int k,int t){
     double x,y,z;
     double dist;
     int i,j;
     #pragma omp parallel num_threads(t)
     {
-        //#pragma omp for collapse(2) private(i,j)
+        int * count_private= calloc(120063, sizeof(int));
         #pragma omp for schedule(dynamic) private(i,j,x,y,z,dist)
         for(i=0;i<k;i+=3){
             for(j=i+3;j<k;j+=3){
@@ -31,10 +31,17 @@ void compute(double * coord, int * count,int k){
                 //distance^2 between 2 points rounded to hundredths, 12.232 -> 1223
                 dist = roundf((x*x+y*y+z*z)*100);
                 //printf("dist: %.2lf\n", (float)((int)roundf(dist*100))/100);
-		        #pragma omp atomic
-                count[(int) dist]++;
+		//#pragma omp atomic
+                //count[(int) dist]++;
+		count_private[(int) dist] ++;
             }
         }
+	#pragma omp critical
+	{
+		for(int l=0;l<120063;l++){
+			count[l]+= count_private[l];
+		}
+	}
     }
     return;
 }
@@ -94,7 +101,7 @@ int main(int argc, char *argv[]){
 
 
     int i,j;
-    compute(coord,count,k);
+    compute(coord,count,k,t);
 
 
     /*for(i=0;i<MAX_COUNT;i++){
