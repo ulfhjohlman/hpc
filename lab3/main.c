@@ -15,6 +15,30 @@ void scan(FILE * inputFile,double * coord, int *r){
     return;
 }
 
+void compute(double * coord, int * count,int k){
+    double x,y,z;
+    double dist;
+    int i,j;
+    #pragma omp parallel num_threads(t)
+    {
+        //#pragma omp for collapse(2) private(i,j)
+        #pragma omp for schedule(dynamic) private(i,j,x,y,z,dist)
+        for(i=0;i<k;i+=3){
+            for(j=i+3;j<k;j+=3){
+                x = coord[i] - coord[j];
+                y = coord[i+1] - coord[j+1];
+                z = coord[i+2] - coord[j+2];
+                //distance^2 between 2 points rounded to hundredths, 12.232 -> 1223
+                dist = roundf((x*x+y*y+z*z)*100);
+                //printf("dist: %.2lf\n", (float)((int)roundf(dist*100))/100);
+		        #pragma omp atomic
+                count[(int) dist]++;
+            }
+        }
+    }
+    return;
+}
+
 int main(int argc, char *argv[]){
     /* parse command line arguments */
     unsigned int t=2;
@@ -68,26 +92,11 @@ int main(int argc, char *argv[]){
     int k;
     scan(inputFile,coord,&k);
 
-    double x,y,z;
-    double dist;
+
     int i,j;
-    #pragma omp parallel num_threads(t)
-    {
-        //#pragma omp for collapse(2) private(i,j)
-        #pragma omp for schedule(dynamic) private(i,j,x,y,z,dist)
-        for(i=0;i<k;i+=3){
-            for(j=i+3;j<k;j+=3){
-                x = coord[i] - coord[j];
-                y = coord[i+1] - coord[j+1];
-                z = coord[i+2] - coord[j+2];
-                //distance^2 between 2 points rounded to hundredths, 12.232 -> 1223
-                dist = roundf((x*x+y*y+z*z)*100);
-                //printf("dist: %.2lf\n", (float)((int)roundf(dist*100))/100);
-		        #pragma omp atomic
-                count[(int) dist]++;
-            }
-        }
-    }
+    compute(coord,count,k);
+
+
     /*for(i=0;i<MAX_COUNT;i++){
         if(count[i]>0){
             printf("%.2f %d\n",i*0.01 , count[i]);
