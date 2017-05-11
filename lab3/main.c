@@ -6,7 +6,7 @@
 
 int main(int argc, char *argv[]){
     /* parse command line arguments */
-    unsigned int t;
+    unsigned int t=2;
     int opt;
     while ((opt = getopt(argc, argv, "t:")) != -1) {
         switch (opt) {
@@ -41,18 +41,26 @@ int main(int argc, char *argv[]){
 
     double x,y,z;
     double dist;
-    int i;
-    for(i=0;i<k;i+=3){
-        for(int j=i+3;j<k;j+=3){
-            x = coord[i] - coord[j];
-            y = coord[i+1] - coord[j+1];
-            z = coord[i+2] - coord[j+2];
-            //distance between 2 points rounded to hundredths, 12.232 -> 1223
-            dist = sqrt(x*x+y*y+z*z);
-            //printf("dist: %lf, (int)dist: %d, roundf: %d\n",dist,(int)dist,(int)roundf(dist));
-            count[(int) roundf(dist*100)]++;
+    int i,j;
+    #pragma omp parallel num_threads(t)
+    {
+        //#pragma omp for collapse(2) private(i,j)
+        #pragma omp for schedule(dynamic) private(i,j)
+        {
+            for(i=0;i<k;i+=3){
+                for(j=i+3;j<k;j+=3){
+                    x = coord[i] - coord[j];
+                    y = coord[i+1] - coord[j+1];
+                    z = coord[i+2] - coord[j+2];
+                    //distance between 2 points rounded to hundredths, 12.232 -> 1223
+                    dist = sqrt(x*x+y*y+z*z);
+                    //printf("dist: %lf, (int)dist: %d, roundf: %d\n",dist,(int)dist,(int)roundf(dist));
+                    count[(int) roundf(dist*100)]++;
+                }
+            }
         }
     }
+
     for(i=0;i<MAX_COUNT;i++){
         if(count[i]>0){
             printf("%.2f %d\n",i*0.01 , count[i]);
