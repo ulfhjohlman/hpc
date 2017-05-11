@@ -48,12 +48,12 @@ int main(int argc, char *argv[]){
         exit(1);
     }
     double * coord; //coordinates of all points
-    coord = malloc(10000*3*sizeof(double));
+    coord = malloc(100000*3*sizeof(double));
     //float * coord; //coordinates of all points
     //coord = malloc(10e5*3*sizeof(float));
 
     int * count; // holds count of distances between points in increments of 0.01
-    int MAX_COUNT = 3465;// round_up(20 * sqrt(3) * 100) chars (the max distance possible is 34.65);
+    int MAX_COUNT = 120063;// round_up(20 * sqrt(3) * 100)^2 ints (the max distance^2 possible is 34.65^2);
     count = calloc(MAX_COUNT,sizeof(int));
     int k = 0;
     int m; //num of points
@@ -75,24 +75,37 @@ int main(int argc, char *argv[]){
                 x = coord[i] - coord[j];
                 y = coord[i+1] - coord[j+1];
                 z = coord[i+2] - coord[j+2];
-                //distance between 2 points rounded to hundredths, 12.232 -> 1223
-                dist = sqrt(x*x+y*y+z*z);
+                //distance^2 between 2 points rounded to hundredths, 12.232 -> 1223
+                dist = (x*x+y*y+z*z);
                 //printf("dist: %.2lf\n", (float)((int)roundf(dist*100))/100);
 		        #pragma omp atomic
                 count[(int) roundf(dist*100)]++;
             }
         }
     }
-    int c=0;
-    for(i=0;i<MAX_COUNT;i++){
+    /*for(i=0;i<MAX_COUNT;i++){
         if(count[i]>0){
             printf("%.2f %d\n",i*0.01 , count[i]);
-            c++;
+        }
+    }*/
+    int c=0;
+    double sqrtBin=1;
+    j=10;
+    for(i=0;i<MAX_COUNT;i++){
+        //printf("uBin: %.2lf , i: %d, j: %d, count[i]: %d\n",sqrtBin,i,j,count[i]);
+        if( i < sqrtBin){
+            c+=count[i];
+        }
+        else {
+            if(c>0){
+                printf("%.2f %d\n",j*0.01 , c);
+                c=0;
+            }
+            j++;
+            sqrtBin = (int)roundf( (0.005 + j / 100.0)*(0.005 + j / 100.0)*100.0);
+            c+=count[i];
         }
     }
-    /*if(c!= (m-1)*m/2.0 ){
-        printf("ERR: total: %d\n",c);
-    }*/
     fclose(inputFile);
     free(coord);
     free(count);
