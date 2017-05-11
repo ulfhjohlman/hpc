@@ -5,6 +5,16 @@
 #include<math.h>
 #include<time.h>
 
+void scan(FILE * inputFile,double * coord, int *r){
+    int k=0;
+    while(fscanf(inputFile,"%lf %lf %lf\n",&coord[k],&coord[k+1],&coord[k+2]) == 3){
+    //while(fscanf(inputFile,"%f %f %f\n",&coord[k],&coord[k+1],&coord[k+2]) == 3){
+        k+=3;
+    }
+    *r = k;
+    return;
+}
+
 int main(int argc, char *argv[]){
     /* parse command line arguments */
     unsigned int t=2;
@@ -55,13 +65,8 @@ int main(int argc, char *argv[]){
     int * count; // holds count of distances between points in increments of 0.01
     int MAX_COUNT = 120063;// round_up(20 * sqrt(3) * 100)^2 ints (the max distance^2 possible is 34.65^2);
     count = calloc(MAX_COUNT,sizeof(int));
-    int k = 0;
-    int m; //num of points
-    while(fscanf(inputFile,"%lf %lf %lf\n",&coord[k],&coord[k+1],&coord[k+2]) == 3){
-    //while(fscanf(inputFile,"%f %f %f\n",&coord[k],&coord[k+1],&coord[k+2]) == 3){
-        k+=3;
-    }
-    m = k/3;
+    int k;
+    scan(inputFile,coord,&k);
 
     double x,y,z;
     double dist;
@@ -76,10 +81,10 @@ int main(int argc, char *argv[]){
                 y = coord[i+1] - coord[j+1];
                 z = coord[i+2] - coord[j+2];
                 //distance^2 between 2 points rounded to hundredths, 12.232 -> 1223
-                dist = (x*x+y*y+z*z);
+                dist = roundf((x*x+y*y+z*z)*100);
                 //printf("dist: %.2lf\n", (float)((int)roundf(dist*100))/100);
 		        #pragma omp atomic
-                count[(int) roundf(dist*100)]++;
+                count[(int) dist]++;
             }
         }
     }
@@ -91,7 +96,7 @@ int main(int argc, char *argv[]){
     int c=0;
     double sqrtBin=1;
     j=10;
-    for(i=0;i<MAX_COUNT;i++){
+    for(i=100;i<MAX_COUNT;i++){
         //printf("uBin: %.2lf , i: %d, j: %d, count[i]: %d\n",sqrtBin,i,j,count[i]);
         if( i < sqrtBin){
             c+=count[i];
