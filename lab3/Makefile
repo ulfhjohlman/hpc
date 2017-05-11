@@ -21,7 +21,7 @@ cleanall : clean
 	rm -f *~ *.h.gch *.tar *.tar.gz
 
 cleanallextra : cleanall
-	rm -f -r distances/ extracted/ reports/
+	rm -f -r distances/ extracted/ reports/ gmon.out *.gcda *.gcno
 tar :
 	tar -cf hjohlman.tar Makefile main.c report.markdown
 	gzip hjohlman.tar

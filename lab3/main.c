@@ -15,31 +15,40 @@ void scan(FILE * inputFile,double * coord, int *r){
     return;
 }
 
-void compute(double * coord, int * count,int k,int t){
+void compute(double * coord, int * count,int * low_count,int k,int t){
     double x,y,z;
     double dist;
     int i,j;
     #pragma omp parallel num_threads(t)
     {
         int * count_private= calloc(120063, sizeof(int));
+	int * low_count_private = calloc(10,sizeof(int));
         #pragma omp for schedule(dynamic) private(i,j,x,y,z,dist)
         for(i=0;i<k;i+=3){
-            for(j=i+3;j<k;j+=3){
+            #pragma omp simd
+	    for(j=i+3;j<k;j+=3){
                 x = coord[i] - coord[j];
                 y = coord[i+1] - coord[j+1];
                 z = coord[i+2] - coord[j+2];
                 //distance^2 between 2 points rounded to hundredths, 12.232 -> 1223
-                dist = roundf((x*x+y*y+z*z)*100);
-                //printf("dist: %.2lf\n", (float)((int)roundf(dist*100))/100);
+                //dist = roundf((x*x+y*y+z*z)*100);
+                dist = (x*x+y*y+z*z)*100;
+		//printf("dist: %.2lf\n", (float)((int)roundf(dist*100))/100);
 		//#pragma omp atomic
                 //count[(int) dist]++;
-		count_private[(int) dist] ++;
+		if(dist<1){
+			low_count_private[ (int)sqrt(dist/100)*100]++;
+		}
+		count_private[(int) dist]++;
             }
         }
 	#pragma omp critical
 	{
 		for(int l=0;l<120063;l++){
 			count[l]+= count_private[l];
+		}
+		for(int l=0;l<10;l++){
+			low_count[l]+=low_count_private[l];
 		}
 	}
     }
@@ -94,21 +103,23 @@ int main(int argc, char *argv[]){
     //coord = malloc(10e5*3*sizeof(float));
 
     int * count; // holds count of distances between points in increments of 0.01
+    int * low_count;
     int MAX_COUNT = 120063;// round_up(20 * sqrt(3) * 100)^2 ints (the max distance^2 possible is 34.65^2);
     count = calloc(MAX_COUNT,sizeof(int));
+    low_count = calloc(10,sizeof(int));
     int k;
     scan(inputFile,coord,&k);
 
 
     int i,j;
-    compute(coord,count,k,t);
+    compute(coord,count,low_count,k,t);
 
 
-    /*for(i=0;i<MAX_COUNT;i++){
-        if(count[i]>0){
-            printf("%.2f %d\n",i*0.01 , count[i]);
+    for(i=0;i<10;i++){
+        if(low_count[i]>0){
+            printf("%.2f %d\n",i*0.01 , low_count[i]);
         }
-    }*/
+    }
     int c=0;
     double sqrtBin=1;
     j=10;
