@@ -5,7 +5,7 @@
 .PHONY : tar
 
 OBJS = main.o
-CFLAGS = -O3 -march=native -fopenmp
+CFLAGS = -Ofast -march=native -fopenmp
 LIBS = -lm -lgomp
 
 cell_distances : $(OBJS)
