@@ -9,7 +9,7 @@ double * getRoots(int root);
 
 void * runPixelCalc(void * args);
 
-void newtonIteration(double * z_re, double * z_im, int d);
+void newtonIteration(double * z_re, double * z_im, int d, double * z_abs);
 
 typedef struct{
   int blockrows;

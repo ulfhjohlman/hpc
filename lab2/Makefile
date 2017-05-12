@@ -5,7 +5,7 @@
 .PHONY : newton
 
 OBJS = main.o makePPM.o doIteration.o
-CFLAGS = -O3 -march=native
+CFLAGS = -Ofast -march=native
 LIBS = -pthread -lpthread -lm
 
 all : $(OBJS)
