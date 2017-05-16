@@ -70,7 +70,7 @@ int main(int argc, char *argv[]){
     
     error = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
     if (error != CL_SUCCESS) {
-        printf("cannot build program. log:\n");
+        printf("cannot build program.\n Source: %s\n log:\n",opencl_program_source);
 	size_t log_size = 0;
   	clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG,0, NULL, &log_size);
 	char * log = calloc(log_size, sizeof(char));
