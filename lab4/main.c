@@ -50,7 +50,7 @@ int main(int argc, char *argv[]){
         return 1;
     }
     
-    const char ** opencl_program_src = "__kernel void dot_prod_mul(__global const float * a,__global const float * b,__global float * c){int ix = get_global_id(0);c[ix] = a[ix] * b[ix];}";
+    const char * opencl_program_src = "__kernel void dot_prod_mul(__global const float * a,__global const float * b,__global float * c){int ix = get_global_id(0);c[ix] = a[ix] * b[ix];}";
 
     cl_program program;
     program = clCreateProgramWithSource(context,1,(const char **) &opencl_program_src, NULL, &error);
@@ -147,7 +147,7 @@ int main(int argc, char *argv[]){
     }
     clFinish(command_queue);
 
-    printf("Square of %f is %f\n", 100, c[100]);
+    printf("Square of %d is %f\n", 100, c[100]);
 
     free(a);
     free(b);

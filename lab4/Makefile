@@ -4,8 +4,8 @@
 .PHONY : tar
 
 OBJS = main.o
-CFLAGS = -O2 -march=native -I/usr/local/cuda-7.5/targets/x86_64-linux/include -lOpenCL
-LIBS = -L/usr/local/cuda-7.5/targets/x86_64-linux/lib 
+CFLAGS = -O2 -march=native -I/usr/local/cuda-7.5/targets/x86_64-linux/include
+LIBS = -lOpenCL -L/usr/local/cuda-7.5/targets/x86_64-linux/lib 
 
 heat_diffusion : $(OBJS)
 	$(CC) $(CFLAGS) -o heat_diffusion $(OBJS) $(LIBS)
