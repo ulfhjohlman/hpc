@@ -50,6 +50,8 @@ int main(int argc, char *argv[]){
         return 1;
     }
     
+    const char ** opencl_program_src = "__kernel void dot_prod_mul(__global const float * a,__global const float * b,__global float * c){int ix = get_global_id(0);c[ix] = a[ix] * b[ix];}";
+
     cl_program program;
     program = clCreateProgramWithSource(context,1,(const char **) &opencl_program_src, NULL, &error);
     if(error != CL_SUCCESS) {
@@ -57,7 +59,7 @@ int main(int argc, char *argv[]){
         return 1;
     }
 
-    clBuildProgram(program, 0, NULL, NULL, NULL, NULL)
+    clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
     
     cl_kernel kernel;
     kernel = clCreateKernel(program, "dot_prod_mul", &error);
