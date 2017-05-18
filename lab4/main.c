@@ -21,6 +21,9 @@ int main(int argc, char *argv[]){
                 exit(EXIT_FAILURE);
         }
     }
+    if(argc != 6){
+        printf("wrong number of arguments\n");
+    }
     int index;
     w = strtol(argv[optind],(char**)NULL,10);
     h = strtol(argv[optind+1],(char**)NULL,10);
@@ -50,7 +53,25 @@ int main(int argc, char *argv[]){
         return 1;
     }
     
-    const char * opencl_program_src = "__kernel void dot_prod_mul(__global const float * a,__global const float * b,__global float * c){int ix = get_global_id(0);c[ix] = a[ix] * b[ix];}";
+    //const char * opencl_program_src = "__kernel void dot_prod_mul(__global const float * a,__global const float * b,__global float * c){int ix = get_global_id(0);c[ix] = a[ix] * b[ix];}";
+
+    char * buffer = 0;
+    long length;
+    FILE * f = fopen (filename, "rb");
+
+    if (f)
+    {
+	fseek (f, 0, SEEK_END);
+	length = ftell (f);
+	fseek (f, 0, SEEK_SET);
+	buffer = malloc (length);
+	if (buffer)
+	{
+	    fread (buffer, 1, length, f);
+	}
+	fclose (f);
+    }
+    const char * opencl_program_src = buffer;
 
     cl_program program;
     program = clCreateProgramWithSource(context,1,(const char **) &opencl_program_src, NULL, &error);
