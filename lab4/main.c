@@ -53,11 +53,17 @@ int main(int argc, char *argv[]){
         return 1;
     }
     
-    //const char * opencl_program_src = "__kernel void dot_prod_mul(__global const float * a,__global const float * b,__global float * c){int ix = get_global_id(0);c[ix] = a[ix] * b[ix];}";
+    const char * opencl_program_src = 
+	"__kernel void dot_prod_mul(\
+	__global const float * a,\
+	__global const float * b,\
+	__global float * c){\
+	int ix = get_global_id(0);\
+	c[ix] = a[ix] * b[ix];}";
 
-    char * buffer = 0;
+    /*char * buffer = 0;
     long length;
-    FILE * f = fopen (filename, "rb");
+    FILE * f = fopen ("dot_prod_mul", "rb");
 
     if (f)
     {
@@ -72,6 +78,7 @@ int main(int argc, char *argv[]){
 	fclose (f);
     }
     const char * opencl_program_src = buffer;
+    */
 
     cl_program program;
     program = clCreateProgramWithSource(context,1,(const char **) &opencl_program_src, NULL, &error);
@@ -107,7 +114,7 @@ int main(int argc, char *argv[]){
     
 
 
-    const size_t ix_m = 10e7;
+    const size_t ix_m = 10e4;
     cl_mem input_buffer_a, input_buffer_b, output_buffer_c;
     input_buffer_a  = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(float) * ix_m, NULL, &error);
     if(error != CL_SUCCESS) {
@@ -127,11 +134,12 @@ int main(int argc, char *argv[]){
 
     float * a = malloc(ix_m*sizeof(float));
     float * b = malloc(ix_m*sizeof(float));
-    for (size_t ix; ix < ix_m; ++ix) {
+    for (size_t ix=0; ix < ix_m; ++ix) {
 	a[ix] = ix;
 	b[ix] = ix;
     }
-    error = clEnqueueWriteBuffer(command_queue, input_buffer_a, CL_TRUE,0, ix_m*sizeof(float), a, 0, NULL, NULL);
+
+   error = clEnqueueWriteBuffer(command_queue, input_buffer_a, CL_TRUE,0, ix_m*sizeof(float), a, 0, NULL, NULL);
     if(error != CL_SUCCESS) {
         printf("cannot enqueue buffer a c\n");
         return 1;
@@ -158,13 +166,13 @@ int main(int argc, char *argv[]){
     }
 
     float * c = malloc(ix_m*sizeof(float));
-    if(c = NULL){
+    if(c == NULL){
          printf("cannot malloc c\n");
          return 1;
     }
     error = clEnqueueReadBuffer(command_queue, output_buffer_c, CL_TRUE,0, ix_m*sizeof(float), c, 0, NULL, NULL);
     if(error != CL_SUCCESS) {
-        printf("cannot set kernel arg a\n");
+        printf("cannot read buffer c\n");
         return 1;
     }
     clFinish(command_queue);
