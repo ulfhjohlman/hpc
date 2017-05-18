@@ -5,11 +5,11 @@
 
 int main(int argc, char *argv[]){
     /* parse command line arguments */
-    int w=10;
-    int h=10;
-    double i=100;
-    int n=1;
-    double d=0.1;
+    int w=3;
+    int h=3;
+    double i=1e6;
+    int n=2;
+    double d=1/30;
     int opt;
     while ((opt = getopt(argc, argv, "i:n:d:")) != -1) {
         switch (opt) {
@@ -25,8 +25,10 @@ int main(int argc, char *argv[]){
         printf("wrong number of arguments\n");
     }
     int index;
-    w = strtol(argv[optind],(char**)NULL,10);
-    h = strtol(argv[optind+1],(char**)NULL,10);
+    if(argc == 6){
+        w = strtol(argv[optind],(char**)NULL,10);
+        h = strtol(argv[optind+1],(char**)NULL,10);
+    }
     printf("w: %d, h: %d i:%fl n: %d, d :%lf\n",w,h,i,n,d);
     
     cl_int error;
@@ -54,31 +56,28 @@ int main(int argc, char *argv[]){
     }
     
     const char * opencl_program_src = 
-	"__kernel void dot_prod_mul(\
-	__global const float * a,\
-	__global const float * b,\
-	__global float * c){\
+	"__kernel void (\
+	__global const int h,\
+	__global const int w,\
+	__global const int c,\
+	__global float * old,\
+	__global float * new){\
 	int ix = get_global_id(0);\
-	c[ix] = a[ix] * b[ix];}";
-
-    /*char * buffer = 0;
-    long length;
-    FILE * f = fopen ("dot_prod_mul", "rb");
-
-    if (f)
-    {
-	fseek (f, 0, SEEK_END);
-	length = ftell (f);
-	fseek (f, 0, SEEK_SET);
-	buffer = malloc (length);
-	if (buffer)
-	{
-	    fread (buffer, 1, length, f);
-	}
-	fclose (f);
-    }
-    const char * opencl_program_src = buffer;
-    */
+	float t,d,l,r;\
+	if(ix<w){\
+		t=0;\
+	}else{ t = old[ix-w]};\
+	if(ix>= (h-1)*w){\
+		d=0;\
+	}else{ d = old[ix+w]};\
+	if(ix % w ==0){\
+		l=0;\
+	}else{ l = old[ix-1]};\
+	if( (ix-1)% w ==0){\
+		r = 0;\
+	}else{ r = old[ix+1]};\
+	new[ix] = old[ix] + c*((t+d+l+r)*0.25 -old[ix]);\
+	}";
 
     cl_program program;
     program = clCreateProgramWithSource(context,1,(const char **) &opencl_program_src, NULL, &error);
@@ -87,7 +86,6 @@ int main(int argc, char *argv[]){
         return 1;
     }
 
-    //clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
     error = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
     if (error != CL_SUCCESS) {
         printf("cannot build program.\n Source: %s\n log:\n",opencl_program_src);
@@ -112,80 +110,104 @@ int main(int argc, char *argv[]){
         return 1;
     }
     
-
-
-    const size_t ix_m = 10e4;
-    cl_mem input_buffer_a, input_buffer_b, output_buffer_c;
-    input_buffer_a  = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(float) * ix_m, NULL, &error);
+    const size_t size = h*w;
+    cl_mem input_buffer_a, input_buffer_b;
+    input_buffer_a  = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(float) * size, NULL, &error);
     if(error != CL_SUCCESS) {
         printf("cannot create buffer a\n");
         return 1;
     }
-    input_buffer_b  = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(float) * ix_m, NULL, &error);
+    input_buffer_b  = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(float) * size, NULL, &error);
     if(error != CL_SUCCESS) {
         printf("cannot create buffer b\n");
         return 1;
     }
-    output_buffer_c = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(float) * ix_m, NULL, &error);
+    
+    float * a = calloc(size*sizeof(float));
+    float * b = calloc(size*sizeof(float));
+    if(h%2 == 0){
+	if(w%2==0){
+		a[w*h/2+w/2] =         i*0.25;
+		a[w*h/2+w/2-1] =       i*0.25;
+		a[w*(h/2-1) + w/2-1] = i*0.25;
+		a[w*(h/2-1) + w/2]   = i*0.25;
+	}else{
+		a[w*h/2+w/2] = i*0.5;
+		a[w*(h/2-1)+w/2] = i*0.5;
+	}
+    }else{
+	if(w%2==0){
+		a[w*h/2 + w/2] = i*0.5;
+		a[w*h/2 + w/2-1] = i*0.5;
+	}else{
+		a[w*h/2 + w/2] = i;
+	}
+    }
+
+
+    error = clEnqueueWriteBuffer(command_queue, input_buffer_a, CL_TRUE,0, size*sizeof(float), a, 0, NULL, NULL);
     if(error != CL_SUCCESS) {
-        printf("cannot create buffer c\n");
+        printf("cannot enqueue buffer a \n");
+        return 1;
+    }
+    error = clEnqueueWriteBuffer(command_queue, input_buffer_b, CL_TRUE,0, size*sizeof(float), b, 0, NULL, NULL);
+    if(error != CL_SUCCESS) {
+        printf("cannot enqueue buffer b \n");
         return 1;
     }
 
-    float * a = malloc(ix_m*sizeof(float));
-    float * b = malloc(ix_m*sizeof(float));
-    for (size_t ix=0; ix < ix_m; ++ix) {
-	a[ix] = ix;
-	b[ix] = ix;
-    }
-
-   error = clEnqueueWriteBuffer(command_queue, input_buffer_a, CL_TRUE,0, ix_m*sizeof(float), a, 0, NULL, NULL);
+    error = clSetKernelArg(kernel, 0, sizeof(cl_mem), &h);
     if(error != CL_SUCCESS) {
-        printf("cannot enqueue buffer a c\n");
+        printf("cannot set kernel arg h\n");
         return 1;
     }
-    error = clEnqueueWriteBuffer(command_queue, input_buffer_b, CL_TRUE,0, ix_m*sizeof(float), b, 0, NULL, NULL);
+    error = clSetKernelArg(kernel, 1, sizeof(cl_mem), &w);
     if(error != CL_SUCCESS) {
-        printf("cannot enqueue buffer b c\n");
-        return 1;
+	printf("cannot set kernel arg w\n");
+    }
+    error = clSetKernelArg(kernel, 2, sizeof(cl_mem), &d);
+    if(error != CL_SUCCESS) {
+	printf("cannot set kernel arg d\n");
+    }
+    error = clSetKernelArg(kernel, 3, sizeof(cl_mem), &input_buffer_a);
+    if(error != CL_SUCCESS) {
+	printf("cannot set kernel arg input_buffer_a");
+    }
+    error = clSetKernelArg(kernel, 4, sizeof(cl_mem), &input_buffer_b);
+    if(error != CL_SUCCESS) {
+	printf("cannot set kernel arg input_buffer_b");
     }
 
-    error = clSetKernelArg(kernel, 0, sizeof(cl_mem), &input_buffer_a);
-    if(error != CL_SUCCESS) {
-        printf("cannot set kernel arg a\n");
-        return 1;
-    }
-    clSetKernelArg(kernel, 1, sizeof(cl_mem), &input_buffer_b);
-    clSetKernelArg(kernel, 2, sizeof(cl_mem), &output_buffer_c);
-
-    const size_t global = ix_m;
-    error = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL,(const size_t *)&global, NULL, 0, NULL, NULL);
+    error = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL,(const size_t *)&size, NULL, 0, NULL, NULL);
     if(error != CL_SUCCESS) {
         printf("cannot enqueue nd range kernel\n");
         return 1;
     }
 
-    float * c = malloc(ix_m*sizeof(float));
-    if(c == NULL){
-         printf("cannot malloc c\n");
-         return 1;
-    }
-    error = clEnqueueReadBuffer(command_queue, output_buffer_c, CL_TRUE,0, ix_m*sizeof(float), c, 0, NULL, NULL);
+    error = clEnqueueReadBuffer(command_queue, input_buffer_a, CL_TRUE,0, size*sizeof(float), a, 0, NULL, NULL);
     if(error != CL_SUCCESS) {
-        printf("cannot read buffer c\n");
+        printf("cannot read buffer a\n");
         return 1;
+    }
+    error = clEnqueueReadBuffer(command_queue, input_buffer_b, CL_TRUE, 0, size*sizeof(float), b, 0, NULL, NULL);
+    if(error != CL_SUCCESS) {
+	printf("cannot read buffer b\n");
+	return 1;
     }
     clFinish(command_queue);
 
-    printf("Square of %d is %f\n", 100, c[100]);
+    if(size <= 100)
+    for(int i=0;i<w;i++){
+	for(int j=0;j<h;j++){
+		printf(" %f ",a[j*h+i]);
+	}
+	printf("\n");
+    }
 
     free(a);
     free(b);
-    free(c);
-
     clReleaseMemObject(input_buffer_a);
     clReleaseMemObject(input_buffer_b);
-    clReleaseMemObject(output_buffer_c);
     clReleaseProgram(program);
     clReleaseKernel(kernel);
     clReleaseCommandQueue(command_queue);
