@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include<getopt.h>
 #include<CL/cl.h>
+#include<math.h>
 
 int main(int argc, char *argv[]){
     /* parse command line arguments */
@@ -145,13 +146,13 @@ int main(int argc, char *argv[]){
 		a[w*(h/2) + w/2] =  i;
 	}
     }
-    if(size<=100)
+   /* if(size<=100)
     for (int i=0;i<h;i++){
 		for(int j=0;j<w;j++){
 			printf(" %f ",a[i*h+j]);
 		} printf("\n");
     }
-    
+   */ 
 
     float * tmp;
     for(int i=0;i<n;i++){
@@ -244,6 +245,20 @@ int main(int argc, char *argv[]){
         }
     }*/
     }
+    double avg_tmp=0;
+    for(int i =0;i < size; i++){
+	avg_tmp += a[i]/size;
+    }
+    //avg_tmp = avg_tmp/size;
+    printf("Average temp: %lf\n",avg_tmp);
+
+    double abs_diff_avg_tmp=0;
+    for(int i =0; i<size;i++){
+	abs_diff_avg_tmp += fabsf(a[i]-avg_tmp)/size;
+	//printf("%f\n",fabsf(a[i]-avg_tmp));
+    }
+//    abs_diff_avg_tmp= abs_diff_avg_tmp/size;
+    printf("Average abs diff from average tmp: %lf\n",abs_diff_avg_tmp);
 
     free(a);
     free(b);
