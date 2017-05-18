@@ -80,15 +80,7 @@ int main(int argc, char *argv[]){
         return 1;
     }
 
-    clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
-    
-    cl_kernel kernel;
-    kernel = clCreateKernel(program, "dot_prod_mul", &error);
-    if(error != CL_SUCCESS) {
-        printf("cannot create Kernel\n");
-        return 1;
-    }
-    
+    //clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
     error = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
     if (error != CL_SUCCESS) {
         printf("cannot build program.\n Source: %s\n log:\n",opencl_program_src);
@@ -105,6 +97,15 @@ int main(int argc, char *argv[]){
 	free(log);
 	return 1;
     }
+    
+    cl_kernel kernel;
+    kernel = clCreateKernel(program, "dot_prod_mul", &error);
+    if(error != CL_SUCCESS) {
+        printf("cannot create Kernel\n");
+        return 1;
+    }
+    
+
 
     const size_t ix_m = 10e7;
     cl_mem input_buffer_a, input_buffer_b, output_buffer_c;
