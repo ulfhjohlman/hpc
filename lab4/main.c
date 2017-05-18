@@ -56,29 +56,29 @@ int main(int argc, char *argv[]){
     }
     
     const char * opencl_program_src = 
-	"__kernel void (\
-	__global const int h,\
-	__global const int w,\
-	__global const int c,\
+	"__kernel void diffuse(\
+	__global const int * h,\
+	__global const int * w,\
+	__global const int * c,\
 	__global float * old,\
 	__global float * new){\
 	int ix = get_global_id(0);\
 	float t,d,l,r;\
-	if(ix<w){\
+	if(ix<*w){\
 		t=0;\
-	}else{ t = old[ix-w]};\
-	if(ix>= (h-1)*w){\
+	}else{ t = old[ix-*w];}\
+	if(ix>= (*h-1)* *w){\
 		d=0;\
-	}else{ d = old[ix+w]};\
-	if(ix % w ==0){\
+	}else{ d = old[ix+ *w];}\
+	if(ix % *w ==0){\
 		l=0;\
-	}else{ l = old[ix-1]};\
-	if( (ix-1)% w ==0){\
+	}else{ l = old[ix-1];}\
+	if( (ix-1)% *w ==0){\
 		r = 0;\
-	}else{ r = old[ix+1]};\
-	new[ix] = old[ix] + c*((t+d+l+r)*0.25 -old[ix]);\
+	}else{ r = old[ix+1];}\
+	new[ix] = old[ix] + *c*((t+d+l+r)*0.25 -old[ix]);\
 	}";
-
+printf("1\n");
     cl_program program;
     program = clCreateProgramWithSource(context,1,(const char **) &opencl_program_src, NULL, &error);
     if(error != CL_SUCCESS) {
@@ -88,7 +88,7 @@ int main(int argc, char *argv[]){
 
     error = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
     if (error != CL_SUCCESS) {
-        printf("cannot build program.\n Source: %s\n log:\n",opencl_program_src);
+        printf("cannot build program.\n log:\n");
 	size_t log_size = 0;
   	clGetProgramBuildInfo(program, device_id, CL_PROGRAM_BUILD_LOG,0, NULL, &log_size);
 	char * log = calloc(log_size, sizeof(char));
@@ -102,49 +102,58 @@ int main(int argc, char *argv[]){
 	free(log);
 	return 1;
     }
-    
+printf("2\n");
     cl_kernel kernel;
-    kernel = clCreateKernel(program, "dot_prod_mul", &error);
+    kernel = clCreateKernel(program, "diffuse", &error);
     if(error != CL_SUCCESS) {
         printf("cannot create Kernel\n");
         return 1;
     }
     
     const size_t size = h*w;
-    cl_mem input_buffer_a, input_buffer_b;
-    input_buffer_a  = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(float) * size, NULL, &error);
+    cl_mem input_buffer_a, input_buffer_b, input_buffer_h, input_buffer_w, input_buffer_d;
+    input_buffer_a  = clCreateBuffer(context, CL_MEM_READ_WRITE,sizeof(float) * size, NULL, &error);
     if(error != CL_SUCCESS) {
         printf("cannot create buffer a\n");
         return 1;
     }
-    input_buffer_b  = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(float) * size, NULL, &error);
+    input_buffer_b  = clCreateBuffer(context, CL_MEM_READ_WRITE,sizeof(float) * size, NULL, &error);
     if(error != CL_SUCCESS) {
         printf("cannot create buffer b\n");
         return 1;
     }
-    
-    float * a = calloc(size*sizeof(float));
-    float * b = calloc(size*sizeof(float));
+    input_buffer_h  = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(int) * size, NULL, &error);
+    input_buffer_w  = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(int) * size, NULL, &error);
+    input_buffer_d  = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(int) * size, NULL, &error);
+printf("3\n");    
+    float * a = (float *) calloc(size,sizeof(float));
+    float * b = (float *) calloc(size,sizeof(float));
     if(h%2 == 0){
 	if(w%2==0){
-		a[w*h/2+w/2] =         i*0.25;
-		a[w*h/2+w/2-1] =       i*0.25;
-		a[w*(h/2-1) + w/2-1] = i*0.25;
-		a[w*(h/2-1) + w/2]   = i*0.25;
+		a[w*(h/2)+w/2] =      i*0.25;
+		a[w*(h/2)+w/2-1] =    i*0.25;
+		a[w*(h/2-1) + w/2-1] =i*0.25;
+		a[w*(h/2-1) + w/2] =  i*0.25;
 	}else{
-		a[w*h/2+w/2] = i*0.5;
-		a[w*(h/2-1)+w/2] = i*0.5;
+		printf("h & w must both be even or odd\n");
+		return 1;
 	}
     }else{
 	if(w%2==0){
-		a[w*h/2 + w/2] = i*0.5;
-		a[w*h/2 + w/2-1] = i*0.5;
+		printf("h & w must both be even or odd\n");
+		return 1;
 	}else{
-		a[w*h/2 + w/2] = i;
+		a[w*(h/2) + w/2] =  i;
 	}
     }
-
-
+    if(size<=100)
+    for (int i=0;i<h;i++){
+		for(int j=0;j<w;j++){
+			printf(" %f ",a[i*h+j]);
+		} printf("\n");
+    }
+    
+printf("4\n");
     error = clEnqueueWriteBuffer(command_queue, input_buffer_a, CL_TRUE,0, size*sizeof(float), a, 0, NULL, NULL);
     if(error != CL_SUCCESS) {
         printf("cannot enqueue buffer a \n");
@@ -155,20 +164,28 @@ int main(int argc, char *argv[]){
         printf("cannot enqueue buffer b \n");
         return 1;
     }
-
-    error = clSetKernelArg(kernel, 0, sizeof(cl_mem), &h);
+    error = clEnqueueWriteBuffer(command_queue, input_buffer_h, CL_TRUE, 0, size*sizeof(int), &h, 0 ,NULL, NULL);
+    if(error != CL_SUCCESS) {
+	printf("cannot enqueue buffer h\n");
+	return(1);
+    }
+    error = clEnqueueWriteBuffer(command_queue, input_buffer_w, CL_TRUE, 0, size*sizeof(int), &w, 0 ,NULL, NULL);
+    error = clEnqueueWriteBuffer(command_queue, input_buffer_d, CL_TRUE, 0, size*sizeof(int), &d, 0 ,NULL, NULL);
+printf("setting constant args:\n");
+    error = clSetKernelArg(kernel, 0, sizeof(cl_mem), &input_buffer_h);
     if(error != CL_SUCCESS) {
         printf("cannot set kernel arg h\n");
         return 1;
     }
-    error = clSetKernelArg(kernel, 1, sizeof(cl_mem), &w);
+    error = clSetKernelArg(kernel, 1, sizeof(cl_mem), &input_buffer_w);
     if(error != CL_SUCCESS) {
 	printf("cannot set kernel arg w\n");
     }
-    error = clSetKernelArg(kernel, 2, sizeof(cl_mem), &d);
+    error = clSetKernelArg(kernel, 2, sizeof(cl_mem), &input_buffer_d);
     if(error != CL_SUCCESS) {
 	printf("cannot set kernel arg d\n");
     }
+printf("setting buffer args:\n");
     error = clSetKernelArg(kernel, 3, sizeof(cl_mem), &input_buffer_a);
     if(error != CL_SUCCESS) {
 	printf("cannot set kernel arg input_buffer_a");
@@ -177,13 +194,16 @@ int main(int argc, char *argv[]){
     if(error != CL_SUCCESS) {
 	printf("cannot set kernel arg input_buffer_b");
     }
-
+printf("Enquing:\n");
     error = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL,(const size_t *)&size, NULL, 0, NULL, NULL);
     if(error != CL_SUCCESS) {
         printf("cannot enqueue nd range kernel\n");
         return 1;
     }
+    
+    clFinish(command_queue);
 
+printf("reading:\n");
     error = clEnqueueReadBuffer(command_queue, input_buffer_a, CL_TRUE,0, size*sizeof(float), a, 0, NULL, NULL);
     if(error != CL_SUCCESS) {
         printf("cannot read buffer a\n");
@@ -196,18 +216,30 @@ int main(int argc, char *argv[]){
     }
     clFinish(command_queue);
 
-    if(size <= 100)
-    for(int i=0;i<w;i++){
-	for(int j=0;j<h;j++){
-		printf(" %f ",a[j*h+i]);
+    if(size <= 100){
+    printf("Printing a:\n");
+    for(int i=0;i<h;i++){
+	for(int j=0;j<w;j++){
+		printf(" %f ",a[i*h+j]);
 	}
 	printf("\n");
-    }
+    }}
 
+    if(size <= 100){
+    printf("Printing b:\n");
+    for(int i=0;i<h;i++){
+	for(int j=0;j<w;j++){
+		printf(" %f ",b[i*h+j]);
+	}
+	printf("\n");
+    }}
     free(a);
     free(b);
     clReleaseMemObject(input_buffer_a);
     clReleaseMemObject(input_buffer_b);
+    clReleaseMemObject(input_buffer_h);
+    clReleaseMemObject(input_buffer_w);
+    clReleaseMemObject(input_buffer_d);
     clReleaseProgram(program);
     clReleaseKernel(kernel);
     clReleaseCommandQueue(command_queue);
