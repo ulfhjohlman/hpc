@@ -125,11 +125,7 @@ int main(int argc, char *argv[]){
     if(error != CL_SUCCESS) {
         printf("cannot create buffer b\n");
         return 1;
-    }
-//    input_buffer_h  = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(int) * size, NULL, &error);
-//    input_buffer_w  = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(int) * size, NULL, &error);
-//    input_buffer_d  = clCreateBuffer(context, CL_MEM_READ_ONLY,sizeof(int) * size, NULL, &error);
-   
+    }   
     float * a = (float *) calloc(size,sizeof(float));
     float * b = (float *) calloc(size,sizeof(float));
     if(h%2 == 0){
@@ -169,13 +165,6 @@ int main(int argc, char *argv[]){
         printf("cannot enqueue buffer b \n");
         return 1;
     }
-//    error = clEnqueueWriteBuffer(command_queue, input_buffer_h, CL_TRUE, 0, size*sizeof(int), &h, 0 ,NULL, NULL);
-//    if(error != CL_SUCCESS) {
-//	printf("cannot enqueue buffer h\n");
-//	return(1);
-//    }
-//    error = clEnqueueWriteBuffer(command_queue, input_buffer_w, CL_TRUE, 0, size*sizeof(int), &w, 0 ,NULL, NULL);
-//    error = clEnqueueWriteBuffer(command_queue, input_buffer_d, CL_TRUE, 0, size*sizeof(int), &d, 0 ,NULL, NULL);
 
 //printf("setting constant args:\n");
     
@@ -238,15 +227,15 @@ for(int i=0;i<n/2;i++){
         printf("cannot read buffer a\n");
         return 1;
     }
-    error = clEnqueueReadBuffer(command_queue, input_buffer_b, CL_TRUE, 0, size*sizeof(float), b, 0, NULL, NULL);
-    if(error != CL_SUCCESS) {
-	printf("cannot read buffer b\n");
-	return 1;
-    }
+    //error = clEnqueueReadBuffer(command_queue, input_buffer_b, CL_TRUE, 0, size*sizeof(float), b, 0, NULL, NULL);
+    //if(error != CL_SUCCESS) {
+//	printf("cannot read buffer b\n");
+//	return 1;
+//   }
 
 
     clFinish(command_queue);
-    
+  /*  
     if(size <= 100){
     printf("Printing a:\n");
     for(int i=0;i<h;i++){
@@ -264,7 +253,7 @@ for(int i=0;i<n/2;i++){
 	}
 	printf("\n");
         }
-    }
+    }*/
     double avg_tmp=0;
     for(int i =0;i < size; i++){
 	avg_tmp += a[i]/size;
