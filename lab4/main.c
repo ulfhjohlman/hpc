@@ -273,9 +273,6 @@ for(int i=0;i<n/2;i++){
     free(b);
     clReleaseMemObject(input_buffer_a);
     clReleaseMemObject(input_buffer_b);
-    clReleaseMemObject(input_buffer_h);
-    clReleaseMemObject(input_buffer_w);
-    clReleaseMemObject(input_buffer_d);
     clReleaseProgram(program);
     clReleaseKernel(kernel);
     clReleaseCommandQueue(command_queue);
