@@ -34,7 +34,7 @@ int main(int argc, char *argv[]){
         w = strtol(argv[optind],(char**)NULL,10);
         h = strtol(argv[optind+1],(char**)NULL,10);
     }
-    printf("w: %d, h: %d i:%f n: %d, d :%f\n",w,h,i,n,d);
+   // printf("w: %d, h: %d i:%f n: %d, d :%f\n",w,h,i,n,d);
     
     cl_int error;
     cl_platform_id platform_id;
