@@ -25,6 +25,10 @@ int main(int argc, char *argv[]){
     if(argc != 6){
         printf("wrong number of arguments\n");
     }
+    if(n%2!= 0){
+	printf("n must be even!\n");
+	return 1;
+    }
     int index;
     if(argc == 6){
         w = strtol(argv[optind],(char**)NULL,10);
@@ -74,7 +78,7 @@ int main(int argc, char *argv[]){
 	if(ix % w ==0){\
 		l=0;\
 	}else{ l = old[ix-1];}\
-	if( (ix-1)% w ==0){\
+	if( (ix+1)% w ==0){\
 		r = 0;\
 	}else{ r = old[ix+1];}\
 	new[ix] = old[ix]+ c*((t+d+l+r)*0.25 - old[ix]);\
@@ -154,8 +158,7 @@ int main(int argc, char *argv[]){
     }
    */ 
 
-    float * tmp;
-    for(int i=0;i<n;i++){
+    
     error = clEnqueueWriteBuffer(command_queue, input_buffer_a, CL_TRUE,0, size*sizeof(float), a, 0, NULL, NULL);
     if(error != CL_SUCCESS) {
         printf("cannot enqueue buffer a \n");
@@ -175,6 +178,7 @@ int main(int argc, char *argv[]){
 //    error = clEnqueueWriteBuffer(command_queue, input_buffer_d, CL_TRUE, 0, size*sizeof(int), &d, 0 ,NULL, NULL);
 
 //printf("setting constant args:\n");
+    
     error = clSetKernelArg(kernel, 0, sizeof(int), &h);
     if(error != CL_SUCCESS) {
         printf("cannot set kernel arg h\n");
@@ -188,23 +192,44 @@ int main(int argc, char *argv[]){
     if(error != CL_SUCCESS) {
 	printf("cannot set kernel arg d\n");
     }
+
+for(int i=0;i<n/2;i++){
 //printf("setting buffer args:\n");
     error = clSetKernelArg(kernel, 3, sizeof(cl_mem), &input_buffer_a);
     if(error != CL_SUCCESS) {
-	printf("cannot set kernel arg input_buffer_a");
+	printf("cannot set kernel arg input_buffer_a\n");
     }
     error = clSetKernelArg(kernel, 4, sizeof(cl_mem), &input_buffer_b);
     if(error != CL_SUCCESS) {
-	printf("cannot set kernel arg input_buffer_b");
+	printf("cannot set kernel arg input_buffer_b\n");
     }
 //printf("Enquing:\n");
     error = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL,(const size_t *)&size, NULL, 0, NULL, NULL);
     if(error != CL_SUCCESS) {
-        printf("cannot enqueue nd range kernel\n");
+        printf("cannot enqueue nd range kernel 1\n");
         return 1;
     }
     
-    clFinish(command_queue);
+    error = clSetKernelArg(kernel, 4, sizeof(cl_mem), &input_buffer_a);
+    if(error != CL_SUCCESS) {
+	printf("cannot set kernel arg input_buffer_a 2 \n");
+        return 1;
+    }
+
+    error = clSetKernelArg(kernel, 3, sizeof(cl_mem), &input_buffer_b);
+    if(error != CL_SUCCESS) {
+	printf("cannot set kernel arg input_buffer_b 2 \n");
+        return 1;
+    }
+
+   
+    error = clEnqueueNDRangeKernel(command_queue, kernel, 1, NULL,(const size_t *)&size, NULL, 0, NULL, NULL);
+    if(error != CL_SUCCESS) {
+        printf("cannot enqueue nd range kernel 2\n");
+        return 1;
+    }
+}
+
 
 //printf("reading:\n");
     error = clEnqueueReadBuffer(command_queue, input_buffer_a, CL_TRUE,0, size*sizeof(float), a, 0, NULL, NULL);
@@ -221,11 +246,7 @@ int main(int argc, char *argv[]){
 
 
     clFinish(command_queue);
-
-    tmp = b;
-    b = a;
-    a = tmp;
-    /*
+    
     if(size <= 100){
     printf("Printing a:\n");
     for(int i=0;i<h;i++){
@@ -243,7 +264,6 @@ int main(int argc, char *argv[]){
 	}
 	printf("\n");
         }
-    }*/
     }
     double avg_tmp=0;
     for(int i =0;i < size; i++){
