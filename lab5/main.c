@@ -1,41 +1,66 @@
 #include<mpi.h>
 #include<stdio.h>
+#include<stdlib.h>
+#include<math.h>
 
 int main(int argc, char * argv[]){	
 	MPI_Init(&argc, &argv);
 	int nmb_mpi_proc, mpi_rank;
 	MPI_Comm_size(MPI_COMM_WORLD, &nmb_mpi_proc);
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+	if(argc != 4){
+		printf("wrong number of arguments. Aborting");
+		return 1;
+	}
+	int start = atoi(argv[1]);
+	int stop = atoi(argv[2]);
+	char * graphFile = argv[3];
+	FILE * gFile = fopen(graphFile,"r");
 
-	if(mpi_rank==0){
-		printf("nmb of process: %d\n",nmb_mpi_proc);
-		{
-		int msg = 10;
-		int len = 1;
-		int dest_rank=1;
-		int tag = 12;
-		MPI_Send(&msg, len, MPI_INT, dest_rank, tag, MPI_COMM_WORLD);
-		printf("MPI message sent from master: %d\n",msg);
-		}
-		{
-		int msg;
-		int max_len = 1;
-		int src_rank = 1;
-		int tag = 10;
-		MPI_Status stat;
-		MPI_Recv(&msg, max_len, MPI_INT, src_rank,tag,MPI_COMM_WORLD,&stat);
-		printf("MPI message rec at master: %d\n",msg);
-		}
+	char * p = graphFile;
+	int degree = 0;
+	int nVert = 0;
+	int maxW = 0;
+	while(*p){
+		if(*p == '_'){
+			p++;
+			if(*p == 'd'){
+				p++;
+				if(*p== 'e'){
+					p++;
+					degree = pow(10,(int)*p-48);
+				}
+			} else if(*p == 'n'){
+				p++;
+				if(*p == 'e'){
+					p++;
+					nVert = pow(10,(int)*p-48);
+				}
+			} else if(*p == 'w'){
+				p++;
+				if(*p == 'e'){
+					p++;	
+					maxW = pow(10,(int)*p-48);
+				}
+			}
+		} else{p++;}
 	}
-	else if(mpi_rank=1){
-		int msg;
-		MPI_Status stat;
-		MPI_Recv(&msg,1,MPI_INT,0,12,MPI_COMM_WORLD,&stat);
-		printf("MPI msg rec at worker: %d\n",msg);
-		msg++;
-		MPI_Send(&msg,1,MPI_INT,0,10,MPI_COMM_WORLD);
-		printf("MPI sent from worker: %d\n",msg);
+	if(degree == 0 || nVert == 0 || maxW == 0 || gFile == NULL){
+		printf("filereading or parsing error at rank: %d\nFile should be of the form XXX/graph_deX_neX_weX\n",mpi_rank);
+		return 1;
 	}
+
+	
+
+	if(mpi_rank == 0){
+		printf("d:%d v: %d, mw: %d",degree,nVert,maxW);
+	
+	}else{
+
+
+
+	}
+
 
 	MPI_Finalize();
 	return 0;

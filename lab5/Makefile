@@ -6,7 +6,7 @@
 CC = mpicc
 OBJS = main.o
 CFLAGS = -O2 -march=native 
-LIBS = 
+LIBS = -lm 
 
 dijkstra : $(OBJS)
 	$(CC) $(CFLAGS) -o dijkstra $(OBJS) $(LIBS)
