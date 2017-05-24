@@ -20,8 +20,8 @@ int main(int argc, char * argv[]){
 		printf("wrong number of arguments. Aborting");
 		return 1;
 	}
-	int start = atoi(argv[1]);
-	int stop = atoi(argv[2]);
+	int start = atoi(argv[2]); //flip start and stop -> search backwards
+	int stop = atoi(argv[1]);
 	char * graphFile = argv[3];
 	FILE * gFile = fopen(graphFile,"r");
 
@@ -81,9 +81,6 @@ int main(int argc, char * argv[]){
 		while(fscanf(gFile,"%*d %d %d\n",&edges[k],&edges[k+1]) == 2){
 			k+=2;
 		}
-
-
-
 	}
 	MPI_Scatter(edges,nRespEdges*2,MPI_INT,localEdges,nRespEdges*2,MPI_INT,0,MPI_COMM_WORLD);
 
@@ -98,60 +95,68 @@ int main(int argc, char * argv[]){
 	for (int i=0;i<nRespVert;i++){
 		localFromVert[i] = -1;
 	}
-	int cost;
+	
 	int newDist;
-	int localMin;
-	int localMinIndex;
+	
+	int localMinIndex = -1;
 	int * visited = calloc(nRespVert,sizeof(int));
-	int * globalMin;
+	struct {
+		int val;
+		int rank;
+	} globalMin, localMin;
+	localMin.val = 1000000000;
+	localMin.rank = mpi_rank;
 	int * globalMinIndex;
 	int tmpMin;
 	int tmpMinIndex;
 	int rank_currentVert;
 	if(mpi_rank==0){
-		globalMin = malloc(sizeof(int)*nmb_mpi_proc);
+//		globalMin = malloc(sizeof(int)*nmb_mpi_proc);
 		globalMinIndex = malloc(sizeof(int)*nmb_mpi_proc);	
 	}
 	if(mpi_rank == start/nRespVert){
 		localDistToVert[start%nRespVert]=0;
 	}
 	MPI_Bcast(&currentVert,1,MPI_INT,0,MPI_COMM_WORLD);
+//	int nVistited=0;
+//	int k=0;
 	while(currentVert != stop){
+//	while(k<6){
 		rank_currentVert = currentVert/nRespVert;	
 		if(rank_currentVert == mpi_rank){
 			visited[currentVert%nRespVert]=1;
 //			printf("visited: %d logged by rank %d at pos: %d\n",currentVert,mpi_rank,currentVert%nRespVert);
 			distToCurrentVert = localDistToVert[currentVert%nRespVert];
+			localMin.val = 1000000000;
+			localMinIndex = -1;
 		}
 		MPI_Bcast(&distToCurrentVert,1,MPI_INT,rank_currentVert,MPI_COMM_WORLD);
 		for(int i=0;i<nRespEdges;i++){
-			if(currentVert == localEdges[i*2]){
-				to = i/degree;
-				cost = localEdges[i*2+1];
-				newDist = distToCurrentVert + cost;
+			to = i/degree;
+			//if(currentVert == localEdges[i*2] && !visited[to]){	
+			if(currentVert == localEdges[i*2]){	
+				newDist = distToCurrentVert + localEdges[i*2+1];
 				if(localDistToVert[to] > newDist ){
 					localDistToVert[to] = newDist;
 //					printf("localFromVert[%d] rank %d changed to: %d from %d\n",to,mpi_rank,currentVert,localFromVert[to]);
 					localFromVert[to] = currentVert;
-					
 				}
 			}
 		}
-		localMin = 1000000000;
-		localMinIndex = -1;
 		for(int i=0;i<nRespVert;i++){
-			if(visited[i]){
-				continue;
-			}
-			if(localDistToVert[i] < localMin){
-				localMin = localDistToVert[i];
+			if(!visited[i] && localDistToVert[i] < localMin.val){	
+				localMin.val = localDistToVert[i];
 				localMinIndex = nRespVert*mpi_rank+i;
 			}
 		}
 //		printf("Current local min for rank %d is %d at node %d\n",mpi_rank,localMin,localMinIndex);
-		MPI_Gather(&localMin,1,MPI_INT, globalMin,1,MPI_INT,0,MPI_COMM_WORLD);
+//		MPI_Gather(&localMin,1,MPI_INT, globalMin,1,MPI_INT,0,MPI_COMM_WORLD);
+		MPI_Reduce(&localMin,&globalMin,1,MPI_2INT,MPI_MINLOC,0,MPI_COMM_WORLD);
 		MPI_Gather(&localMinIndex,1,MPI_INT, globalMinIndex,1,MPI_INT,0,MPI_COMM_WORLD);
 		if(mpi_rank==0){
+			currentVert = globalMinIndex[globalMin.rank];
+
+/*			nVisited++;
 			tmpMin = globalMin[0];
 			tmpMinIndex = globalMinIndex[0]; 	
 			for(int j=1;j<nmb_mpi_proc;j++){
@@ -161,8 +166,10 @@ int main(int argc, char * argv[]){
 				}
 			}
 			currentVert = tmpMinIndex;
+*/
 //			printf("currentVert to expand: %d\n",currentVert);
 		}
+//		MPI_Barrier(MPI_COMM_WORLD); k++;
 		MPI_Bcast(&currentVert,1,MPI_INT,0,MPI_COMM_WORLD);	
 	}
 	
@@ -172,6 +179,7 @@ int main(int argc, char * argv[]){
 	}
 	MPI_Gather(localFromVert,nRespVert,MPI_INT,globalFromVert,nRespVert,MPI_INT,0,MPI_COMM_WORLD);
 	if(mpi_rank ==0){
+//		printf("Visited a total of: %d nodes\n",nVisited);
 		/*for(int i=0;i<nVert;i++){
 			printf(" %d ",globalFromVert[i]);
 		}*/
@@ -180,12 +188,12 @@ int main(int argc, char * argv[]){
 				printf("\nShortest path: %d",stop);
 			}
 			currentVert = globalFromVert[currentVert];
-			printf(" <- %d",currentVert);
+			printf(" -> %d",currentVert);
 		}
 		printf("\n\n");
 	}
 	
-	if(mpi_rank == stop/nRespVert){
+	if(mpi_rank == rankOfVert(stop)){
 		printf("Shortest path length: %d\n",localDistToVert[stop%nRespVert]);
 	}
 	
@@ -194,7 +202,7 @@ int main(int argc, char * argv[]){
 	free(localDistToVert);
 	if(mpi_rank == 0){
 		free(edges);
-		free(globalMin);
+//		free(globalMin);
 		free(globalMinIndex);
 	}
 	MPI_Finalize();
