@@ -121,9 +121,8 @@ int main(int argc, char * argv[]){
 //	int nVistited=0;
 //	int k=0;
 	while(currentVert != stop){
-//	while(k<6){
-		rank_currentVert = currentVert/nRespVert;	
-		if(rank_currentVert == mpi_rank){
+//	while(k<6){	
+		if(rankOfVert(currentVert) == mpi_rank){
 			visited[currentVert%nRespVert]=1;
 //			printf("visited: %d logged by rank %d at pos: %d\n",currentVert,mpi_rank,currentVert%nRespVert);
 			distToCurrentVert = localDistToVert[currentVert%nRespVert];
