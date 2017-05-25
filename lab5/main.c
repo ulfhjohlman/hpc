@@ -21,13 +21,15 @@ int main(int argc, char * argv[]){
 		printf("wrong number of arguments. Aborting");
 		return 1;
 	}
+	int start;
+	int stop;
 	if(bcastEdges){
-		int start = atoi(argv[1]);
-		int stop = atoi(argv[2]);
+		start = atoi(argv[1]);
+		stop = atoi(argv[2]);
 
 	}else{
-		int start = atoi(argv[2]); //flip start and stop -> search backwards
-		int stop = atoi(argv[1]);
+		start = atoi(argv[2]); //flip start and stop -> search backwards
+		stop = atoi(argv[1]);
 
 	}
 
@@ -172,9 +174,11 @@ if(!bcastEdges){
 		MPI_Bcast(&currentVert,1,MPI_INT,0,MPI_COMM_WORLD);
 	}
 }
+//int k=0;
 if(bcastEdges){
+//	while(currentVert != stop && k<10){
+//	k++;
 	while(currentVert != stop){
-//	while(k<6){
 		rank_currentVert = rankOfVert(currentVert);
 		if(rank_currentVert == mpi_rank){
 			localVertIndex = currentVert%nRespVert;
@@ -184,15 +188,20 @@ if(bcastEdges){
 			localMin.val = 1000000000;
 			localMinIndex = -1;
 			currentEdges = &localEdges[localVertIndex*degree*2];
+//			for (int i=0;i<degree*2;i++){
+//				printf("%d",currentEdges[i] == localEdges[i+localVertIndex*degree*2]);
+//			}
 		}
-		MPI_Bcast(localVertIndex,2*degree,MPI_INT,rank_currentVert,MPI_COMM_WORLD);
+		MPI_Bcast(currentEdges,2*degree,MPI_INT,rank_currentVert,MPI_COMM_WORLD);
 		MPI_Bcast(&distToCurrentVert,1,MPI_INT,rank_currentVert,MPI_COMM_WORLD);
 		for(int i=0;i<degree;i++){
 			if(currentEdges[i*2]/nRespVert == mpi_rank){
+
 				to = currentEdges[i*2]%nRespVert;
 				newDist = distToCurrentVert + currentEdges[i*2+1];
 				if(newDist < localDistToVert[to]){
 					localDistToVert[to] = newDist;
+//					printf("Examining edge from  %d to %d at rank %d new min %d\n",currentVert,currentEdges[i*2],mpi_rank,newDist);
 					localFromVert[to] = currentVert;
 				}
 			}
@@ -222,10 +231,10 @@ if(bcastEdges){
 		MPI_Gather(&localMinIndex,1,MPI_INT, globalMinIndex,1,MPI_INT,0,MPI_COMM_WORLD);
 		if(mpi_rank==0){
 			currentVert = globalMinIndex[globalMin.rank];
-//			printf("currentVert to expand: %d\n",currentVert);
-		}
-//		MPI_Barrier(MPI_COMM_WORLD); k++;
+//			printf("currentVert to expand: %d, with value: %d\n",currentVert,globalMin.val);
+		}	
 		MPI_Bcast(&currentVert,1,MPI_INT,0,MPI_COMM_WORLD);
+		if(currentVert == -1){printf("currentVert==-1.Abort\n");MPI_Finalize();return 1;}	
 	}
 
 }
@@ -244,7 +253,11 @@ if(bcastEdges){
 				printf("\nShortest path: %d",stop);
 			}
 			currentVert = globalFromVert[currentVert];
-			printf(" -> %d",currentVert);
+			if(bcastEdges){
+				printf(" <- %d",currentVert);
+			}else{
+				printf(" -> %d",currentVert);
+			}
 		}
 		printf("\n\n");
 	}
@@ -252,7 +265,10 @@ if(bcastEdges){
 	if(mpi_rank == rankOfVert(stop)){
 		printf("Shortest path length: %d\n",localDistToVert[stop%nRespVert]);
 	}
-
+	
+//	if(rank_currentVert != mpi_rank){
+//		free(currentEdges);
+//	}
 	free(localFromVert);
 	free(localEdges);
 	free(localDistToVert);
